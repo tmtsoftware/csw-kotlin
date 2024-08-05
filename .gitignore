@@ -1,0 +1,36 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.zip
+*.tar.gz
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+.DS_Store
+
+.idea
+**/.idea/*
+!/.idea/icon.png
+!/.idea/vcs.xml
+!/.idea/copyright
+!/.idea/codeStyleSettings.xml
+!/.idea/codeStyles
+!/.idea/dictionaries
+*.iml
+.gradle
+.gradletasknamecache
+build
+out
+target
+local.properties
+benchmarks.jar

@@ -1,0 +1,3 @@
+object Versions {
+    val kotestVersion = "5.9.1"
+}

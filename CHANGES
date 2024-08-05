@@ -1,0 +1,8 @@
+
+Initial Check-in
+* Parms include smaller set of key types to look more like JavaScript: NumberKey, IntegerKey, BooleanKey, StringKey.  Only IntegerKey and NumberKey can have units.
+  There are also ChoiceKey, TAIKey, UTCKey, CoordKeys, ExposureIdKey (new), ObservationIdKey (new). NumberKey and IntegerKey values are returned as Quantity or
+  Scalar.
+* In Scala CSW, units were added with the key constructor but it was possible to add different units usings "withUnits". The units should not be changed for a key.
+* In Scala CSW, two keys were equal if they had the same name only. In KCSW, they must be the same type, same name, and units must be the same to be equal
+* The parms API is also somewhat simpler than SCSW.
