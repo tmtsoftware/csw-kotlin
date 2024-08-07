@@ -16,12 +16,17 @@ import kotlinx.serialization.UseSerializers
 typealias CommandName = String
 //value class CommandName(val name: String)
 
-sealed interface Command {
+sealed interface Command: PrefixData {
 
     /**
      * Prefix representing source of the command
      */
     val source: Prefix
+
+    /**
+     * Provided for filtering
+     */
+    override fun prefix() = source
 
     /**
      * The name of command
