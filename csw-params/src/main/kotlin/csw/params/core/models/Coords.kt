@@ -75,30 +75,42 @@ enum class SolarSystemObject {
 
 data class SolarSystemCoord(override val tag: Tag, val body: SolarSystemObject) : HasTag
 
-data class MinorPlanetCoord(
-    override val tag: Tag,
-    val epoch: Double,            // TT as a Modified Julian Date
-    val inclination: Angle,       // degrees
-    val longAscendingNode: Angle, // degrees
-    val argOfPerihelion: Angle,   // degrees
-    val meanDistance: Double,     // AU
-    val eccentricity: Double,
-    val meanAnomaly: Angle // degrees
-) : HasTag
-
+typealias EpochOfPerihelion = Double
+typealias Inclination = Angle
+typealias LongAscendingNode = Angle
+typealias ArgOfPerihelion = Angle
+typealias PerihelionDistance = Double
+typealias Eccentricity = Double
+typealias Epoch = Double
+typealias MeanDistance = Double
+typealias MeanAnomaly = Angle
 
 data class CometCoord(
     override val tag: Tag,
-    val epochOfPerihelion: Double,  // TT as a Modified Julian Date
-    val inclination: Angle,         // degrees
-    val longAscendingNode: Angle,   // degrees
-    val argOfPerihelion: Angle,     // degrees
-    val perihelionDistance: Double, // AU
-    val eccentricity: Double
+    val epochOfPerihelion: EpochOfPerihelion,  // TT as a Modified Julian Date
+    val inclination: Inclination,         // degrees
+    val longAscendingNode: LongAscendingNode,   // degrees
+    val argOfPerihelion: ArgOfPerihelion,     // degrees
+    val perihelionDistance: PerihelionDistance, // AU
+    val eccentricity: Eccentricity
+) : HasTag {
+    override fun toString(): String =
+        "CometCoord($tag,${epochOfPerihelion},${inclination.toDegree()},${longAscendingNode.toDegree()},${argOfPerihelion.toDegree()},${perihelionDistance},${eccentricity})"
+}
+
+data class MinorPlanetCoord(
+    override val tag: Tag,
+    val epoch: Epoch,            // TT as a Modified Julian Date
+    val inclination: Inclination,       // degrees
+    val longAscendingNode: LongAscendingNode, // degrees
+    val argOfPerihelion: ArgOfPerihelion,   // degrees
+    val meanDistance: MeanDistance,     // AU
+    val eccentricity: Eccentricity,
+    val meanAnomaly: MeanAnomaly // degrees
 ) : HasTag
 
 
-data class EqCoords(val ra: Angle, val dec: Angle, val frame: EqFrame)
+
 /**
  * Equatorial coordinates.
  *
