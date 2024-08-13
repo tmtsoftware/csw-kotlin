@@ -21,6 +21,8 @@ interface HasParms {
 
     fun exists(key: IsKey): Boolean = nget(key.name) != null
 
+    operator fun contains(key: IsKey): Boolean = exists(key)
+
     fun keys(): List<Key> = parms.map { it.name }
 
     fun nget(name: Key): HasKey? = parms.firstOrNull { it.name == name }

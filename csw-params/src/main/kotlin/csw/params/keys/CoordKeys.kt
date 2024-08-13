@@ -50,7 +50,7 @@ data class EqCoordKey(val tag: Tag) : IsKey {
     operator fun invoke(target: HasParms): EqCoord = get(target).getOrElse { throw NoSuchElementException(notFound) }
 
     companion object {
-        private val DELIM = ","
+        private const val DELIM = ","
         fun encode(
             tag: Tag,
             ctype: CoordType,
@@ -62,7 +62,7 @@ data class EqCoordKey(val tag: Tag) : IsKey {
         ): CoordStore =
             CoordStore(tag.name, ctype, encodeValues(ra, dec, frame, "none", pmra, pmdec))
 
-        fun encodeValues(
+        private fun encodeValues(
             ra: Angle, dec: Angle, frame: EqFrame = EqCoord.DEFAULT_FRAME,
             catName: String = EqCoord.DEFAULT_CATNAME,
             pmra: Double = EqCoord.DEFAULT_PMX, pmdec: Double = EqCoord.DEFAULT_PMY
@@ -119,7 +119,7 @@ data class AltAzCoordKey(val tag: Tag) : IsKey {
     operator fun invoke(target: HasParms): AltAzCoord = get(target).getOrElse { throw NoSuchElementException(notFound) }
 
     companion object {
-        private val DELIM = ","
+        private const val DELIM = ","
 
         fun encode(alt: Angle, az: Angle): String = "${alt.uas}$DELIM${az.uas}"
 
@@ -159,7 +159,7 @@ data class SolarSystemCoordKey(val tag: Tag) : IsKey {
 
     companion object {
 
-        fun encode(body: SolarSystemObject): String = "${body.name}"
+        fun encode(body: SolarSystemObject): String = body.name
 
         fun decodeToSolarSystem(cstore: CoordStore): SolarSystemCoord? {
             require(cstore.ctype == CoordType.SSO)
@@ -203,7 +203,7 @@ data class CometCoordKey(val tag: Tag) : IsKey {
     operator fun invoke(target: HasParms): CometCoord = get(target).getOrElse { throw NoSuchElementException(notFound) }
 
     companion object {
-        private val DELIM = ","
+        private const val DELIM = ","
 
         fun encode(
             epochOfPerihelion: EpochOfPerihelion, inclination: Inclination, longAscendingNode: LongAscendingNode,
@@ -212,7 +212,7 @@ data class CometCoordKey(val tag: Tag) : IsKey {
             "${epochOfPerihelion}$DELIM${inclination.uas}$DELIM${longAscendingNode.uas}$DELIM${argOfPerihelion.uas}$DELIM$perihelionDistance$DELIM$eccentricity"
 
         fun decodeToCometCoord(cstore: CoordStore): CometCoord? {
-            val items = cstore.value.split(CometCoordKey.DELIM)
+            val items = cstore.value.split(DELIM)
             require(cstore.ctype == CoordType.COM)
             require(items.size == 6) { "Expected exactly 6 items for CometCoord, but got ${items.size}" }
 
@@ -274,7 +274,7 @@ data class MinorPlanetCoordKey(val tag: Tag) : IsKey {
         get(target).getOrElse { throw NoSuchElementException(notFound) }
 
     companion object {
-        private val DELIM = ","
+        private const val DELIM = ","
 
         fun encode(
             epoch: Epoch,

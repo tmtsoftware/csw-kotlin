@@ -28,10 +28,12 @@ class CommandTests: FunSpec( {
         s = s.add(key1.set(100, 200), key3.set(UTCTime.now()))
         s = s.add(key2.set(-100.123))
 
-        s.exists(key1) shouldBe true
-        s.exists(key3) shouldBe true
+        s.apply {
+            exists(key1) shouldBe true
+            exists(key3) shouldBe true
 
-        s.size shouldBe 3
+            size shouldBe 3
+        }
     }
 
     test("Duplicate key name should replace") {

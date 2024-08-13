@@ -43,26 +43,35 @@ class PrefixTest : FunSpec({
     }
 
     // Prefix should serialize to Json and cbor
-    test("should serialie to JSON") {
+    test("should serialize to JSON") {
         val prefix = Prefix("Tcs.Filter.Wheel")
 
         val jsonOut = Json.encodeToString(prefix)
-        println(jsonOut)
         val sin = Json.decodeFromString<Prefix>(jsonOut)
-        println(sin)
         prefix shouldBe sin
     }
 
     // Prefix should serialize to Json and cbor
-    test("should serialie to CBOR") {
+    test("should serialize to CBOR") {
         val prefix = Prefix("Tcs.Filter.Wheel")
 
         val bytes = Cbor.encodeToByteArray(prefix)
-        println(bytes.toAsciiHexString())
         val obj = Cbor.decodeFromByteArray<Prefix>(bytes)
-        println(obj)
         prefix shouldBe obj
     }
 
+    test("should not contain leading or trailing spaces in component's name | DEOPSCSW-14") {
+        val ex = shouldThrow<IllegalArgumentException> {
+            Prefix(Subsystem.CSW, " redis ")
+        }
+        ex.message shouldBe "A component name should not have leading or trailing whitespaces"
+    }
+
+    test("should not contain '-' in component's name | DEOPSCSW-14") {
+        val ex = shouldThrow<IllegalArgumentException> {
+            Prefix(Subsystem.CSW, "redis-service")
+        }
+        ex.message shouldBe "A component name cannot contain a '-'"
+    }
 }
 )

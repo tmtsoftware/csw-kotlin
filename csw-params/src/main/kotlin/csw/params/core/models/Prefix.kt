@@ -16,9 +16,9 @@ import kotlinx.serialization.Serializable
 data class Prefix(val subsystem: Subsystem, val componentName: String) {
 
     init {
-        require(componentName == componentName.trim()) { "component name has leading and trailing whitespaces" }
+        require(componentName == componentName.trim()) { "A component name should not have leading or trailing whitespaces" }
 
-        require(!componentName.contains("-")) { "component name has '-'" }
+        require(!componentName.contains("-")) { "A component name cannot contain a '-'" }
     }
 
     /**

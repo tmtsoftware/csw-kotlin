@@ -1,24 +1,19 @@
 val serializationVersion: String by project
-val dataTimeVersion: String by project
 val arrowVersion: String by project
 
 plugins {
-    kotlin("jvm")
+    kotlin("jvm") version "2.0.0"
     kotlin("plugin.serialization") version "2.0.0"
 }
 
-//val kotlinVersion = project.properties["kotlinVersion"]
-//println("kotlinVersion: $kotlinVersion")
-/*
+version = "6.0"
+
 repositories {
     mavenCentral()
 }
 
- */
-
-
 dependencies {
-    implementation(project(":csw-time"))
+    implementation(project(":csw-params"))
     implementation(platform("io.arrow-kt:arrow-stack:$arrowVersion"))
     implementation("io.arrow-kt:arrow-core")
     implementation("io.arrow-kt:arrow-optics")
@@ -27,24 +22,14 @@ dependencies {
     implementation("io.arrow-kt:arrow-core-serialization")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor:$serializationVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:$dataTimeVersion")
-    implementation("net.java.dev.jna:jna:5.14.0")
-
-    //testImplementation(kotlin("test"))
     testImplementation("io.kotest:kotest-runner-junit5:${Versions.kotestVersion}")
     testImplementation("io.kotest:kotest-assertions-core:${Versions.kotestVersion}")
     testImplementation("io.kotest.extensions:kotest-assertions-arrow:1.4.0")
 }
 
-
-tasks.withType<Test>().configureEach {
+tasks.test {
     useJUnitPlatform()
 }
-
-/*
 kotlin {
     jvmToolchain(21)
 }
-
- */
-
