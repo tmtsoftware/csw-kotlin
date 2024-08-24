@@ -1,14 +1,14 @@
 package csw.location.api.models
 
+import csw.location.api.codecs.ModelCodecs.ConnectionSerializer
 import csw.params.core.models.Prefix
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
  * Represents a connection based on a componentId and the type of connection offered by the component
- *
- * @param connectionType represents a type of connection offered by the Component
  */
-@Serializable
+@Serializable(with= ConnectionSerializer::class)
 sealed interface Connection {
 
     /**
@@ -53,13 +53,13 @@ sealed interface Connection {
          * @param input is the string representation of connection e.g. TromboneAssembly-assembly-akka
          * @return a Connection model created from string
          */
-        fun from(input: String): Connection {
+        operator fun invoke(input: String): Connection {
             val items = input.split("-")
 
             return if (items.size == 3) {
                 val name = items[0]
-                val componentType = ComponentType.valueOf(items[1])
-                val connectionType = ConnectionType.withName(items[2])
+                val componentType = ComponentType(items[1])
+                val connectionType = ConnectionType(items[2])
                 from(ConnectionInfo(Prefix(name), componentType, connectionType))
             } else
                 throw IllegalArgumentException("Unable to parse '$input' to make Connection object")
@@ -72,8 +72,7 @@ sealed interface Connection {
          * @return A Connection created from connectionInfo
          */
         fun from(connectionInfo: ConnectionInfo): Connection =
-            from(ComponentId(connectionInfo.prefix, connectionInfo.componentType), // TODO: is this right?
-                 connectionInfo.connectionType)
+            from(ComponentId(connectionInfo.prefix, connectionInfo.componentType), connectionInfo.connectionType)
 
         private fun from(componentId: ComponentId, connectionType: ConnectionType): Connection =
             when (connectionType) {
@@ -88,7 +87,9 @@ sealed interface Connection {
  * Represents a connection offered by remote Actors e.g. nfiraos.TromboneAssembly-assembly-akka or nfiraos.TromboneHcd-hcd-akka
  */
 @Serializable
-data class AkkaConnection(override val componentId: ComponentId, override val connectionType: ConnectionType): Connection {
+@SerialName("akka")
+class AkkaConnection(override val componentId: ComponentId,
+                     override val connectionType: ConnectionType = ConnectionType.AkkaType): Connection {
     override fun toString(): String = "AkkaConnection(componentId=$componentId, connectionType=$connectionType)"
 
     override fun equals(other: Any?): Boolean {
@@ -96,7 +97,7 @@ data class AkkaConnection(override val componentId: ComponentId, override val co
         if (javaClass != other?.javaClass) return false
         other as AkkaConnection
         if (componentId != other.componentId) return false
-        if (connectionType != other.connectionType) return false
+        if (connectionType != ConnectionType.AkkaType) return false
         return true
     }
 
@@ -110,7 +111,9 @@ data class AkkaConnection(override val componentId: ComponentId, override val co
  * Represents a http connection provided by the component e.g. csw.ConfigServer-service-http
  */
 @Serializable
-class HttpConnection(override val componentId: ComponentId, override val connectionType: ConnectionType): Connection {
+@SerialName("http")
+class HttpConnection(override val componentId: ComponentId,
+                     override val connectionType: ConnectionType = ConnectionType.HttpType): Connection {
     override fun toString(): String = "HttpConnection(componentId: $componentId, connectionType: $connectionType)"
 
     override fun equals(other: Any?): Boolean {
@@ -118,7 +121,7 @@ class HttpConnection(override val componentId: ComponentId, override val connect
         if (javaClass != other?.javaClass) return false
         other as HttpConnection
         if (componentId != other.componentId) return false
-        if (connectionType != other.connectionType) return false
+        if (connectionType != ConnectionType.HttpType) return false
         return true
     }
     override fun hashCode(): Int {
@@ -132,7 +135,9 @@ class HttpConnection(override val componentId: ComponentId, override val connect
  * represents a tcp connection provided by the component e.g. csw.EventService-service-tcp
  */
 @Serializable
-data class TcpConnection(override val componentId: ComponentId, override val connectionType: ConnectionType): Connection {
+@SerialName("tcp")
+data class TcpConnection(override val componentId: ComponentId,
+                         override val connectionType: ConnectionType = ConnectionType.TcpType): Connection {
     override fun toString(): String = "TcpConnection(componentId: $componentId, connectionType: $connectionType)"
 
     override fun equals(other: Any?): Boolean {
@@ -140,7 +145,7 @@ data class TcpConnection(override val componentId: ComponentId, override val con
         if (javaClass != other?.javaClass) return false
         other as TcpConnection
         if (componentId != other.componentId) return false
-        if (connectionType != other.connectionType) return false
+        if (connectionType != ConnectionType.TcpType) return false
         return true
     }
 

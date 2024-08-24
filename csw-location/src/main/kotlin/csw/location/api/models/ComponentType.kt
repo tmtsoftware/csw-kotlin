@@ -9,11 +9,6 @@ package csw.location.api.models
 enum class ComponentType(private val messageManifest: String) {
 
     /**
-     * Returns a sequence of all component types
-     */
-    //def values: IndexedSeq[ComponentType] = findValues
-
-    /**
      * Represents a container for components e.g. assemblies and HCDs
      */
     Container("ContainerMessage"),
@@ -46,5 +41,21 @@ enum class ComponentType(private val messageManifest: String) {
     /**
      * Represents a Machine
      */
-    Machine("")
+    Machine("");
+
+    companion object {
+        // The following is convoluted to handle case on input, be careful adding new ones
+        operator fun invoke(ctIn: String): ComponentType =
+            when (ctIn.lowercase()) {
+                "container" -> Container
+                "hcd" -> HCD
+                "assembly" -> Assembly
+                "sequencer" -> Sequencer
+                "sequencecomponent" -> SequenceComponent
+                "service" -> Service
+                "machine" -> Machine
+                else -> { throw IllegalArgumentException("ComponentType $ctIn not supported") }
+            }
+
+    }
 }

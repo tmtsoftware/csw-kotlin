@@ -11,10 +11,9 @@ class ConnectionTypeTest: FunSpec( {
         val expectedConnectionTypeValues = setOf("http", "tcp", "akka")
 
         val actualConnectionTypeValues: Set<String> =
-            ConnectionType.values().map { it.cname }.toSet()
+            ConnectionType.entries.map { it.cname }.toSet()
 
         actualConnectionTypeValues shouldContainExactlyInAnyOrder  expectedConnectionTypeValues
     }
-
 }
 )

@@ -1,11 +1,16 @@
 package csw.location.api.models
 
+import csw.location.api.codecs.ModelCodecs.ConnectionSerializer
+import csw.location.api.codecs.ModelCodecs.URISerializer
 import csw.params.core.models.Prefix
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.net.URI
 
 /**
  * Location represents a live Connection along with its URI
  */
+@Serializable
 sealed interface Location /*extends LocationSerializable*/ {
 
     /**
@@ -40,8 +45,12 @@ sealed interface Location /*extends LocationSerializable*/ {
  * @param uri represents the actor URI of the component. Gateway or router for a component that other components will resolve and talk to.
  * @param metadata represents additional metadata information associated with location. Defaulted to empty is not provided while registration
  */
+@Serializable
+@SerialName("AkkaLocation")
 data class AkkaLocation(
+    @Serializable(with= ConnectionSerializer::class)
     override val connection: AkkaConnection,
+    @Serializable(with= URISerializer::class)
     override val uri: URI,
     override val metadata: Metadata
 ) : Location
@@ -53,8 +62,15 @@ data class AkkaLocation(
  * @param uri represents the remote URI of the component that other components will resolve and talk to
  * @param metadata represents additional metadata information associated with location. Defaulted to empty is not provided while registration.
  */
-data class TcpLocation(override val connection: TcpConnection, override val uri: URI, override val metadata: Metadata) :
-    Location
+@Serializable
+@SerialName("TcpLocation")
+data class TcpLocation(
+    @Serializable(with= ConnectionSerializer::class)
+    override val connection: TcpConnection,
+    @Serializable(with= URISerializer::class)
+    override val uri: URI,
+    override val metadata: Metadata
+) : Location
 
 /**
  * Represents a live Http connection
@@ -63,8 +79,13 @@ data class TcpLocation(override val connection: TcpConnection, override val uri:
  * @param uri represents the remote URI of the component that other components will resolve and talk to
  * @param metadata represents additional metadata information associated with location. Defaulted to empty is not provided while registration.
  */
+@Serializable
+@SerialName("HttpLocation")
 data class HttpLocation(
+    @Serializable(with= ConnectionSerializer::class)
     override val connection: HttpConnection,
+    @Serializable(with= URISerializer::class)
     override val uri: URI,
     override val metadata: Metadata
 ) : Location
+

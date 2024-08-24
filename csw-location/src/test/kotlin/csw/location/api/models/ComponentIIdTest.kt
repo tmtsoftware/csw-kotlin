@@ -5,6 +5,8 @@ import csw.params.core.models.Subsystem
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class ComponentIdTest: FunSpec( {
 
@@ -33,6 +35,17 @@ class ComponentIdTest: FunSpec( {
             ComponentId(Prefix(Subsystem.CSW, "redis-service"), ComponentType.Service)
         }
         ex.message shouldBe "A component name cannot contain a '-'"
+    }
+
+    // Test connection json against CSW format
+    test("should serialize JSON as needed for CSW") {
+        val c1 = ComponentId(Prefix(Subsystem.IRIS, "filter.wheel"), ComponentType.HCD)
+        val jsonOut = Json.encodeToString(c1)
+
+        jsonOut shouldBe """{"prefix":"IRIS.filter.wheel","componentType":"HCD"}"""
+
+        val obj = Json.decodeFromString<ComponentId>(jsonOut)
+        obj shouldBe c1
     }
 }
 )

@@ -51,16 +51,16 @@ class ConnectionTest: FunSpec( {
 
     // DEOPSCSW-14: Codec for data model
     test("should able to form a connection for components from a valid string representation | DEOPSCSW-14") {
-        Connection.from("nfiraos.tromboneAssembly-Assembly-akka") shouldBe
+        Connection("nfiraos.tromboneAssembly-Assembly-akka") shouldBe
                 AkkaConnection(ComponentId(Prefix(Subsystem.NFIRAOS, "tromboneAssembly"), ComponentType.Assembly), ConnectionType.AkkaType)
 
-        Connection.from("nfiraos.tromboneHcd-HCD-akka") shouldBe
+        Connection("nfiraos.tromboneHcd-HCD-akka") shouldBe
                 AkkaConnection(ComponentId(Prefix(Subsystem.NFIRAOS, "tromboneHcd"), ComponentType.HCD), ConnectionType.AkkaType)
 
-        Connection.from("csw.redis-Service-tcp") shouldBe
+        Connection("csw.redis-Service-tcp") shouldBe
                 TcpConnection(ComponentId(Prefix(Subsystem.CSW, "redis"), ComponentType.Service), ConnectionType.TcpType)
 
-        Connection.from("csw.configService-Service-http") shouldBe
+        Connection("csw.configService-Service-http") shouldBe
                 HttpConnection(ComponentId(Prefix(Subsystem.CSW, "configService"), ComponentType.Service), ConnectionType.HttpType)
     }
 
@@ -69,13 +69,13 @@ class ConnectionTest: FunSpec( {
         val connection = "nfiraos.tromboneAssembly_assembly_akka"
 
         val ex = shouldThrow<IllegalArgumentException> {
-            Connection.from(connection)
+            Connection(connection)
         }
         ex.message shouldBe "Unable to parse '$connection' to make Connection object"
 
         val connection2 = "nfiraos.trombone-hcd"
         val ex2 = shouldThrow<IllegalArgumentException> {
-            Connection.from(connection2)
+            Connection(connection2)
         }
         ex2.message shouldBe "Unable to parse '$connection2' to make Connection object"
     }
@@ -117,5 +117,6 @@ class ConnectionTest: FunSpec( {
         val obj3 = Cbor.decodeFromByteArray<HttpConnection>(bytes3)
         obj3 shouldBe c3
     }
+
 }
 )

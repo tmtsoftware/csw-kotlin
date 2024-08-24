@@ -1,6 +1,12 @@
 package csw.params.core.models
 
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * A top level key for a parameter set: combination of subsystem and the subsystem's prefix
@@ -12,7 +18,7 @@ import kotlinx.serialization.Serializable
  * @param subsystem     component subsystem - tcs (TCS), wfos (WFOS)
  * @param componentName component name - filter.wheel, prog.cloudcover
  */
-@Serializable
+@Serializable(with = PrefixSerializer::class)
 data class Prefix(val subsystem: Subsystem, val componentName: String) {
 
     init {
@@ -44,5 +50,19 @@ data class Prefix(val subsystem: Subsystem, val componentName: String) {
             val componentName = items[1]
             return Prefix(subsystem, componentName)
         }
+    }
+}
+
+object PrefixSerializer : KSerializer<Prefix> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("Prefix", PrimitiveKind.STRING)
+
+    override fun deserialize(decoder: Decoder): Prefix {
+        val prefixStr = decoder.decodeString()
+        return Prefix(prefixStr)
+    }
+
+    override fun serialize(encoder: Encoder, prefix: Prefix) {
+        val str = prefix.toString()
+        encoder.encodeString(str)
     }
 }

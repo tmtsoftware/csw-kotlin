@@ -99,6 +99,17 @@ data class IntegerKey(override val name: Key, val units: Units = Units.NoUnits):
     fun get(target: HasParms): Option<Quantity> =
         Qstore.getStored(name, target).map { Quantity(it.svalues, it.units) }
 
+    fun get2(target: HasParms, sname: StructKey): Option<Quantity> {
+        val x = Struct.getStored(sname.name, target)
+        println("X: $x")
+        val result = when (x) {
+            is Some ->
+                return get(x.value)
+            is None -> None
+        }
+        return result
+    }
+
     fun scalar(target: HasParms): Scalar {
         val q = get(target).getOrElse { throw NoSuchElementException(notFound) }
         return Scalar(q.svalue)

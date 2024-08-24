@@ -6,6 +6,8 @@ import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class MetadataTest: FunSpec( {
 
@@ -15,7 +17,7 @@ class MetadataTest: FunSpec( {
 
         val metadata = Metadata().withAgentPrefix(agentPrefix).withPid(pid)
 
-        metadata.values shouldBe mapOf("agentPrefix" to agentPrefix.toString(), "PID" to pid.toString())
+        metadata.value shouldBe mapOf("agentPrefix" to agentPrefix.toString(), "PID" to pid.toString())
     }
 
     test("should be able to create metadata with given key | CSW-108") {
@@ -24,7 +26,7 @@ class MetadataTest: FunSpec( {
 
         val metadata = Metadata().add("customKey1", value1).add("customKey2", value2)
 
-        metadata.values shouldBe mapOf("customKey1" to value1, "customKey2" to value2)
+        metadata.value shouldBe mapOf("customKey1" to value1, "customKey2" to value2)
     }
 
     test("should be able to get value from metadata for given key | CSW-108") {
@@ -69,8 +71,18 @@ class MetadataTest: FunSpec( {
 
         val metadata = Metadata().withSequenceComponentPrefix(sequenceComponentPrefix)
 
-        metadata.values shouldBe mapOf("sequenceComponentPrefix" to sequenceComponentPrefix.toString())
+        metadata.value shouldBe mapOf("sequenceComponentPrefix" to sequenceComponentPrefix.toString())
         metadata.getSequenceComponentPrefix() shouldBe Some(sequenceComponentPrefix)
+    }
+
+    test("should properly serialize metadata") {
+        val metadata = Metadata().add("customKey1", "value1")
+        println("Metadata: $metadata")
+
+        val jsonOut = Json.encodeToString(metadata)
+
+        println("jsonOut: $jsonOut")
+
     }
 }
 )

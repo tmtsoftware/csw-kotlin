@@ -1,7 +1,10 @@
-package csw.csw.location.api.models
+package csw.location.api.models
 
-import arrow.core.MemoizedDeepRecursiveFunction
-import csw.location.api.models.*
+import csw.csw.location.api.models.NetworkType
+import csw.location.api.codecs.ModelCodecs.ConnectionSerializer
+import csw.location.api.codecs.ModelCodecs.NetworkSerializer
+import csw.location.api.codecs.ModelCodecs.URISerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.net.URI
 
@@ -24,6 +27,8 @@ sealed interface Registration {
      */
     fun location(hostname: String): Location
 
+    val connectionInfo: ConnectionInfo
+        get() = ConnectionInfo(connection.componentId.prefix, connection.componentId.componentType, connection.connectionType)
     /**
      * metadata represents any additional information (metadata) associated with registration
      */
@@ -31,6 +36,9 @@ sealed interface Registration {
 
     fun withCswVersion(version: String): Registration
 }
+
+// TODO: TBD if this is needed
+//abstract sealed class TypedConnection<out T : Location>(connectionType: ConnectionType) : Connection(connectionType)
 
 /**
  * AkkaRegistration holds the information needed to register an akka location
@@ -40,8 +48,12 @@ sealed interface Registration {
  *                 communicated from components across the network
  * @param metadata represents additional metadata information associated with location. Defaulted to empty if not provided.
  */
-internal data class AkkaRegistration (
+@Serializable
+@SerialName("AkkaRegistration")
+data class AkkaRegistration (
+    @Serializable(with=ConnectionSerializer::class)
     override val connection: AkkaConnection,
+    @Serializable(with= URISerializer::class)
     val actorRefURI: URI,
     override val metadata: Metadata
 ): Registration {
@@ -63,10 +75,13 @@ internal data class AkkaRegistration (
  * @param port provide the port where Tcp service is available
  * @param metadata represents additional metadata information associated with location. Defaulted to empty if not provided.
  */
-final data class TcpRegistration(override val connection: TcpConnection, val port: Int, override val metadata: Metadata): Registration {
-
-    //Used for JAVA API
-//    def this(connection: TcpConnection, port: Int) = this(connection, port, Metadata.empty)
+@Serializable
+@SerialName("TcpRegistration")
+data class TcpRegistration(
+    @Serializable(with=ConnectionSerializer::class)
+    override val connection: TcpConnection,
+    val port: Int,
+    override val metadata: Metadata): Registration {
 
     /**
      * Create a TcpLocation that represents the live Tcp service
@@ -74,12 +89,15 @@ final data class TcpRegistration(override val connection: TcpConnection, val por
      * @param hostname provide the hostname where Tcp service is available
      * @return an TcpLocation location representing a live connection at provided hostname
      */
-    override fun location(hostname: String): Location = TcpLocation(connection, URI("tcp://$hostname:$port"), metadata)
+    override fun location(hostname: String): Location =
+        TcpLocation(connection, URI("tcp://$hostname:$port"), metadata)
 
-    override fun withCswVersion(version: String): TcpRegistration = this.copy(metadata = metadata.withCSWVersion(version))
+    override fun withCswVersion(version: String): TcpRegistration =
+        this.copy(metadata = metadata.withCSWVersion(version))
 
     companion object {
-        operator fun invoke(connection: TcpConnection, port: Int): TcpRegistration = TcpRegistration(connection, port, Metadata.empty)
+        operator fun invoke(connection: TcpConnection, port: Int): TcpRegistration =
+            TcpRegistration(connection, port, Metadata.empty)
     }
 }
 
@@ -90,23 +108,17 @@ final data class TcpRegistration(override val connection: TcpConnection, val por
  * @param path provide the path to reach the available http service
  * @param metadata represents additional metadata information associated with location. Defaulted to empty if not provided.
  */
+@Serializable
+@SerialName("HttpRegistration")
 data class HttpRegistration(
+    @Serializable(with= ConnectionSerializer::class)
     override val connection: HttpConnection,
     val port: Int,
     val path: String,
+    @Serializable(with= NetworkSerializer::class)
     val networkType: NetworkType,
     override val metadata: Metadata
 ): Registration {
-
-    //Used for JAVA API
-    //def this(connection: HttpConnection, port: Int, path: String, metadata: Metadata) =
-//        this(connection, port, path, NetworkType.Inside, metadata)
-
-    //  def this(connection: HttpConnection, port: Int, path: String) =
-//        this(connection, port, path, NetworkType.Inside, Metadata.empty)
-
-    //  def this(connection: HttpConnection, port: Int, path: String, networkType: NetworkType) =
-//        this(connection, port, path, networkType, Metadata.empty)
 
     /**
      * Create a HttpLocation that represents the live Http service
@@ -130,3 +142,4 @@ data class HttpRegistration(
             HttpRegistration(connection, port, path, NetworkType.Inside, Metadata.empty)
     }
 }
+

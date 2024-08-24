@@ -1,11 +1,9 @@
 plugins {
     base
-    kotlin("jvm") version "2.0.0" apply false
+    kotlin("jvm") version "2.0.20" apply false
 }
 
 allprojects {
-
-    group = "csw"
 
     version = "6.0"
 
