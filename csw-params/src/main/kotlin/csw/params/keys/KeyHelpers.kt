@@ -9,26 +9,37 @@ object KeyHelpers {
     private const val DELIM: String = ","
     private const val AR_DELIM: String = ":"
 
-    internal fun <T> aencode(s: Array<T>): String = s.joinToString(DELIM)
+    internal fun <T> aencode(s: Array<T>): Array<String> = s.map { it.toString() }.toTypedArray()  //  s.joinToString(DELIM)
 
-    internal fun <T> lencode(s: List<T>): String = s.joinToString(",")
+    internal fun <T> lencode(s: List<T>): Array<String> = s.map { it.toString() }.toTypedArray() //s.joinToString(",")
 
-    internal fun sencode(s: Number): String = aencode(arrayOf(s))
+    internal fun sencode(s: Number): Array<String> = aencode(arrayOf(s))
 
-    internal fun decodeValue(s: String): Array<Double> = asStrings(s).map{ it.toDouble() }.toTypedArray()
+    internal fun decodeValue(s: Array<String>): DoubleArray = s.map{ it.toDouble() }.toDoubleArray()
+
+    internal fun Array<String>.toDoubleArray() = this.map { it.toDouble() }.toDoubleArray()
 
     internal fun asStrings(s: String): Array<String> = s.split(DELIM).toTypedArray()
-
-    //internal fun testBoolean(s: String): Boolean = if (s == "f") false else true
-
-    // internal fun asBoolean(a: Array<String>): Boolean  = testBoolean(a[0])
-    //internal fun asBooleanArray(a: Array<String>): BooleanArray = a.map { testBoolean(it) }.toBooleanArray()
 
     internal fun arrayencode(arrays: List<ArrayData>): String {
         var str = arrays.map { it.data.joinToString(",") }.joinToString(":")
         println("STR: $str")
         return str
     }
+
+    inline fun <reified T>getStored(item: IsKey, target: HasParms): T? {
+        val s: HasKey? = target.nget(item.name)
+        return if (s is T) s as T else null
+    }
+
+    fun <T> aashow(a: T): String {
+        return when (a) {
+            is DoubleArray -> a.joinToString(DELIM, "[", "[")
+            is Array<*> -> a.joinToString(DELIM, "[", "]")
+            else -> throw IllegalArgumentException("Fuck")
+        }
+    }
+
 
     fun <T> ashow(a: Array<T>) = a.joinToString(DELIM, "[", "[")
 

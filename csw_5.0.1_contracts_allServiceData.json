@@ -1,0 +1,1433 @@
+{
+  "location-service" : {
+    "http-contract" : {
+      "endpoints" : [ {
+        "requestType" : "Register",
+        "responseType" : "Location",
+        "errorTypes" : [ "RegistrationFailed", "OtherLocationIsRegistered" ]
+      }, {
+        "requestType" : "Unregister",
+        "responseType" : "Done",
+        "errorTypes" : [ "UnregistrationFailed" ]
+      }, {
+        "requestType" : "UnregisterAll",
+        "responseType" : "Done",
+        "errorTypes" : [ "UnregistrationFailed" ]
+      }, {
+        "requestType" : "Find",
+        "responseType" : "[Location]"
+      }, {
+        "requestType" : "Resolve",
+        "responseType" : "[Location]"
+      }, {
+        "requestType" : "ListEntries",
+        "responseType" : "[Location]",
+        "errorTypes" : [ "RegistrationListingFailed" ]
+      }, {
+        "requestType" : "ListByComponentType",
+        "responseType" : "[Location]",
+        "errorTypes" : [ "RegistrationListingFailed" ]
+      }, {
+        "requestType" : "ListByConnectionType",
+        "responseType" : "[Location]",
+        "errorTypes" : [ "RegistrationListingFailed" ]
+      }, {
+        "requestType" : "ListByHostname",
+        "responseType" : "[Location]",
+        "errorTypes" : [ "RegistrationListingFailed" ]
+      }, {
+        "requestType" : "ListByPrefix",
+        "responseType" : "[Location]",
+        "errorTypes" : [ "RegistrationListingFailed" ]
+      } ],
+      "requests" : {
+        "ListEntries" : [ {
+          "_type" : "ListEntries"
+        } ],
+        "UnregisterAll" : [ {
+          "_type" : "UnregisterAll"
+        } ],
+        "Resolve" : [ {
+          "_type" : "Resolve",
+          "connection" : {
+            "prefix" : "TCS.filter.wheel",
+            "componentType" : "HCD",
+            "connectionType" : "akka"
+          },
+          "within" : "23 seconds"
+        } ],
+        "ListByConnectionType" : [ {
+          "_type" : "ListByConnectionType",
+          "connectionType" : "akka"
+        }, {
+          "_type" : "ListByConnectionType",
+          "connectionType" : "http"
+        } ],
+        "Unregister" : [ {
+          "_type" : "Unregister",
+          "connection" : {
+            "prefix" : "TCS.filter.wheel",
+            "componentType" : "HCD",
+            "connectionType" : "http"
+          }
+        } ],
+        "ListByHostname" : [ {
+          "_type" : "ListByHostname",
+          "hostname" : "hostname"
+        } ],
+        "Find" : [ {
+          "_type" : "Find",
+          "connection" : {
+            "prefix" : "TCS.filter.wheel",
+            "componentType" : "HCD",
+            "connectionType" : "akka"
+          }
+        } ],
+        "Register" : [ {
+          "_type" : "Register",
+          "registration" : {
+            "_type" : "AkkaRegistration",
+            "connection" : {
+              "prefix" : "TCS.filter.wheel",
+              "componentType" : "HCD",
+              "connectionType" : "akka"
+            },
+            "actorRefURI" : "path",
+            "metadata" : {
+              "key1" : "value"
+            }
+          }
+        }, {
+          "_type" : "Register",
+          "registration" : {
+            "_type" : "HttpRegistration",
+            "connection" : {
+              "prefix" : "TCS.filter.wheel",
+              "componentType" : "HCD",
+              "connectionType" : "http"
+            },
+            "port" : 8080,
+            "path" : "path",
+            "networkType" : {
+              "_type" : "Inside"
+            },
+            "metadata" : { }
+          }
+        }, {
+          "_type" : "Register",
+          "registration" : {
+            "_type" : "HttpRegistration",
+            "connection" : {
+              "prefix" : "TCS.filter.wheel",
+              "componentType" : "HCD",
+              "connectionType" : "http"
+            },
+            "port" : 8080,
+            "path" : "path",
+            "networkType" : {
+              "_type" : "Outside"
+            },
+            "metadata" : { }
+          }
+        } ],
+        "ListByComponentType" : [ {
+          "_type" : "ListByComponentType",
+          "componentType" : "HCD"
+        }, {
+          "_type" : "ListByComponentType",
+          "componentType" : "Assembly"
+        } ],
+        "ListByPrefix" : [ {
+          "_type" : "ListByPrefix",
+          "prefix" : "TCS.filter.wheel"
+        } ]
+      }
+    },
+    "websocket-contract" : {
+      "endpoints" : [ {
+        "requestType" : "Track",
+        "responseType" : "TrackingEvent"
+      } ],
+      "requests" : {
+        "Track" : [ {
+          "_type" : "Track",
+          "connection" : {
+            "prefix" : "TCS.filter.wheel",
+            "componentType" : "HCD",
+            "connectionType" : "akka"
+          }
+        } ]
+      }
+    },
+    "models" : {
+      "TrackingEvent" : [ {
+        "_type" : "LocationUpdated",
+        "location" : {
+          "_type" : "AkkaLocation",
+          "connection" : {
+            "prefix" : "TCS.filter.wheel",
+            "componentType" : "HCD",
+            "connectionType" : "akka"
+          },
+          "uri" : "path",
+          "metadata" : {
+            "key1" : "value"
+          }
+        }
+      }, {
+        "_type" : "LocationRemoved",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "akka"
+        }
+      } ],
+      "ComponentType" : [ "Container", "HCD", "Assembly", "Sequencer", "SequenceComponent", "Service", "Machine" ],
+      "Connection" : [ {
+        "prefix" : "TCS.filter.wheel",
+        "componentType" : "HCD",
+        "connectionType" : "akka"
+      }, {
+        "prefix" : "TCS.filter.wheel",
+        "componentType" : "HCD",
+        "connectionType" : "http"
+      }, {
+        "prefix" : "TCS.filter.wheel",
+        "componentType" : "HCD",
+        "connectionType" : "tcp"
+      } ],
+      "Registration" : [ {
+        "_type" : "AkkaRegistration",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "akka"
+        },
+        "actorRefURI" : "path",
+        "metadata" : {
+          "key1" : "value"
+        }
+      }, {
+        "_type" : "HttpRegistration",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "http"
+        },
+        "port" : 8080,
+        "path" : "path",
+        "networkType" : {
+          "_type" : "Inside"
+        },
+        "metadata" : { }
+      }, {
+        "_type" : "HttpRegistration",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "http"
+        },
+        "port" : 8080,
+        "path" : "path",
+        "networkType" : {
+          "_type" : "Outside"
+        },
+        "metadata" : { }
+      }, {
+        "_type" : "TcpRegistration",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "tcp"
+        },
+        "port" : 8080,
+        "metadata" : { }
+      } ],
+      "ComponentId" : [ {
+        "prefix" : "TCS.filter.wheel",
+        "componentType" : "HCD"
+      } ],
+      "Prefix" : [ "TCS.filter.wheel" ],
+      "LocationServiceError" : [ {
+        "_type" : "RegistrationFailed",
+        "msg" : "failure message"
+      }, {
+        "_type" : "OtherLocationIsRegistered",
+        "msg" : "failure message"
+      }, {
+        "_type" : "UnregistrationFailed",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "akka"
+        }
+      }, {
+        "_type" : "RegistrationListingFailed"
+      } ],
+      "ConnectionType" : [ "http", "tcp", "akka" ],
+      "Subsystem" : [ "AOESW", "APS", "CIS", "CLN", "CRYO", "CSW", "DMS", "DPS", "ENC", "ESEN", "ESW", "HNDL", "HQ", "IRIS", "LGSF", "M1COAT", "M1CS", "M1S", "M2COAT", "M2S", "M3S", "MODHIS", "NFIRAOS", "OSS", "REFR", "SCMS", "SER", "SOSS", "STR", "SUM", "TCS", "TINS", "WFOS", "Container" ],
+      "Location" : [ {
+        "_type" : "AkkaLocation",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "akka"
+        },
+        "uri" : "path",
+        "metadata" : {
+          "key1" : "value"
+        }
+      }, {
+        "_type" : "HttpLocation",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "http"
+        },
+        "uri" : "path",
+        "metadata" : { }
+      }, {
+        "_type" : "TcpLocation",
+        "connection" : {
+          "prefix" : "TCS.filter.wheel",
+          "componentType" : "HCD",
+          "connectionType" : "tcp"
+        },
+        "uri" : "path",
+        "metadata" : { }
+      } ]
+    },
+    "readme" : "# Location service contract\n\nThis page describes possible ways of accessing location service via HTTP/Websocket and sample JSON representation of request body, response body and error body. \n\n## Location service endpoints \n\n### Http endpoint\n\nThe url - `http://{{host}}:{{port}}/post-endpoint` can be used to access location service\n\nFollowing JSON payloads can be \"post\"ed to the above URL:\n* Register\n* Unregister\n* UnregisterAll\n* Find\n* Resolve and\n* List\n\n### Websocket endpoint\n\nTo execute the `Track` request for a particular `Connection` one can \"send\" it to the url - `ws://{{host}}:{{port}}/websocket-endpoint`.\n\n_Note:_\n\nMake sure to replace the `host` and `port` of the running location service on local/remote machine.\n\n## JSON Contract\n\n* Request sample, response types and error types for http endpoint is described in `http-contract.json`     \n* Request sample, response types and error types for webservice endpoint is described in `websocket-contract.json`\n* Samples describing how to create requests, possible responses and possible errors can be found in `models.json`\n"
+  },
+  "command-service" : {
+    "http-contract" : {
+      "endpoints" : [ {
+        "requestType" : "Validate",
+        "responseType" : "ValidateResponse"
+      }, {
+        "requestType" : "Submit",
+        "responseType" : "SubmitResponse"
+      }, {
+        "requestType" : "Query",
+        "responseType" : "SubmitResponse"
+      }, {
+        "requestType" : "Oneway",
+        "responseType" : "OnewayResponse"
+      } ],
+      "requests" : {
+        "Validate" : [ {
+          "_type" : "Validate",
+          "controlCommand" : {
+            "_type" : "Observe",
+            "source" : "CSW.ncc.trombone",
+            "commandName" : "move",
+            "maybeObsId" : "2020A-001-123",
+            "paramSet" : [ ]
+          }
+        } ],
+        "Submit" : [ {
+          "_type" : "Submit",
+          "controlCommand" : {
+            "_type" : "Observe",
+            "source" : "CSW.ncc.trombone",
+            "commandName" : "move",
+            "maybeObsId" : "2020A-001-123",
+            "paramSet" : [ ]
+          }
+        } ],
+        "Query" : [ {
+          "_type" : "Query",
+          "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0"
+        } ],
+        "Oneway" : [ {
+          "_type" : "Oneway",
+          "controlCommand" : {
+            "_type" : "Observe",
+            "source" : "CSW.ncc.trombone",
+            "commandName" : "move",
+            "maybeObsId" : "2020A-001-123",
+            "paramSet" : [ ]
+          }
+        } ]
+      }
+    },
+    "websocket-contract" : {
+      "endpoints" : [ {
+        "requestType" : "QueryFinal",
+        "responseType" : "SubmitResponse"
+      }, {
+        "requestType" : "SubscribeCurrentState",
+        "responseType" : "CurrentState"
+      } ],
+      "requests" : {
+        "QueryFinal" : [ {
+          "_type" : "QueryFinal",
+          "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0",
+          "timeoutInSeconds" : 100
+        } ],
+        "SubscribeCurrentState" : [ {
+          "_type" : "SubscribeCurrentState",
+          "names" : [ "idle" ]
+        } ]
+      }
+    },
+    "models" : {
+      "Units" : [ "angstrom", "alpha", "ampere", "arcmin", "arcsec", "bar", "candela", "day", "degree", "degC", "degF", "elvolt", "gauss", "gram", "hertz", "henry", "hour", "joule", "kelvin", "kilogram", "kilometer", "liter", "lm", "lsun", "lx", "mas", "me", "meter", "microarcsec", "millimeter", "millisecond", "micron", "micrometer", "minute", "MJD", "mol", "month", "mmyy", "mu0", "muB", "nanometer", "newton", "ohm", "pascal", "pi", "pc", "ppm", "radian", "second", "sday", "steradian", "volt", "watt", "Wb", "week", "year", "coulomb", "centimeter", "D", "dyn", "erg", "au", "a0", "c", "cKayser", "crab", "damas", "e", "earth", "F", "G", "geoMass", "hm", "hms", "hhmmss", "jansky", "jd", "jovmass", "lightyear", "mag", "mjup", "mp", "minsec", "msun", "photon", "rgeo", "rjup", "rsun", "rydberg", "seimens", "tesla", "u", "barn", "cal", "foot", "inch", "pound", "mile", "ounce", "yard", "NoUnits", "bit", "encoder", "count", "mmhg", "percent", "pix", "tai", "utc", "date", "datetime" ],
+      "CommandName" : [ "move" ],
+      "UTCTime" : [ "2023-04-13T20:23:51.953536907Z" ],
+      "CurrentState" : [ {
+        "prefix" : "CSW.ncc.trombone",
+        "stateName" : "idle",
+        "paramSet" : [ {
+          "StringKey" : {
+            "keyName" : "StringKey",
+            "values" : [ "Str1", "Str2" ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "UTCTimeKey" : {
+            "keyName" : "UTCTimeKey",
+            "values" : [ "1970-01-01T00:00:00Z", "2023-04-13T20:23:51.953536907Z" ],
+            "units" : "utc"
+          }
+        }, {
+          "IntKey" : {
+            "keyName" : "IntKey",
+            "values" : [ 70, 80 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "FloatKey" : {
+            "keyName" : "FloatKey",
+            "values" : [ 90, 100 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "CharKey" : {
+            "keyName" : "CharKey",
+            "values" : [ "A", "B" ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "LongKey" : {
+            "keyName" : "LongKey",
+            "values" : [ 50, 60 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "FloatMatrixKey" : {
+            "keyName" : "FloatMatrix",
+            "values" : [ [ [ 16, 17 ], [ 18, 19 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ChoiceKey" : {
+            "keyName" : "ChoiceKey",
+            "values" : [ "First", "Second" ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ShortKey" : {
+            "keyName" : "ShortKey",
+            "values" : [ 30, 40 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "DoubleArrayKey" : {
+            "keyName" : "DoubleArrayKey",
+            "values" : [ [ 11, 12 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "FloatArrayKey" : {
+            "keyName" : "FloatArrayKey",
+            "values" : [ [ 9, 10 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "TAITimeKey" : {
+            "keyName" : "TAITimeKey",
+            "values" : [ "1970-01-01T00:00:00Z", "2023-04-13T20:24:28.956187940Z" ],
+            "units" : "tai"
+          }
+        }, {
+          "ByteArrayKey" : {
+            "keyName" : "ByteArrayKey",
+            "values" : [ [ 1, 2 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "IntArrayKey" : {
+            "keyName" : "IntArrayKey",
+            "values" : [ [ 7, 8 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "CoordKey" : {
+            "keyName" : "CoordKey",
+            "values" : [ {
+              "_type" : "EqCoord",
+              "tag" : "BASE",
+              "ra" : 659912250000,
+              "dec" : -109892300000,
+              "frame" : "FK5",
+              "catalogName" : "none",
+              "pm" : {
+                "pmx" : 0.5,
+                "pmy" : 2.33
+              }
+            }, {
+              "_type" : "SolarSystemCoord",
+              "tag" : "BASE",
+              "body" : "Venus"
+            }, {
+              "_type" : "MinorPlanetCoord",
+              "tag" : "GUIDER1",
+              "epoch" : 2000,
+              "inclination" : 324000000000,
+              "longAscendingNode" : 7200000000,
+              "argOfPerihelion" : 360000000000,
+              "meanDistance" : 1.4,
+              "eccentricity" : 0.234,
+              "meanAnomaly" : 792000000000
+            }, {
+              "_type" : "CometCoord",
+              "tag" : "BASE",
+              "epochOfPerihelion" : 2000,
+              "inclination" : 324000000000,
+              "longAscendingNode" : 7200000000,
+              "argOfPerihelion" : 360000000000,
+              "perihelionDistance" : 1.4,
+              "eccentricity" : 0.234
+            }, {
+              "_type" : "AltAzCoord",
+              "tag" : "BASE",
+              "alt" : 1083600000000,
+              "az" : 153000000000
+            } ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ByteKey" : {
+            "keyName" : "ByteKey",
+            "values" : [ 10, 20 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "DoubleMatrixKey" : {
+            "keyName" : "DoubleMatrix",
+            "values" : [ [ [ 20, 21 ], [ 22, 23 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ShortMatrixKey" : {
+            "keyName" : "ShortMatrix",
+            "values" : [ [ [ 4, 5 ], [ 6, 7 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "BooleanKey" : {
+            "keyName" : "BooleanKey",
+            "values" : [ true, false ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ByteMatrixKey" : {
+            "keyName" : "ByteMatrix",
+            "values" : [ [ [ 1, 2 ], [ 3, 4 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "IntMatrixKey" : {
+            "keyName" : "IntMatrix",
+            "values" : [ [ [ 12, 13 ], [ 14, 15 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "DoubleKey" : {
+            "keyName" : "DoubleKey",
+            "values" : [ 110, 120 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "LongMatrixKey" : {
+            "keyName" : "LongMatrix",
+            "values" : [ [ [ 8, 9 ], [ 10, 11 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "LongArrayKey" : {
+            "keyName" : "LongArrayKey",
+            "values" : [ [ 5, 6 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ShortArrayKey" : {
+            "keyName" : "ShortArrayKey",
+            "values" : [ [ 3, 4 ] ],
+            "units" : "NoUnits"
+          }
+        } ]
+      } ],
+      "CommandIssue" : [ {
+        "_type" : "AssemblyBusyIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "IdNotAvailableIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "MissingKeyIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "ParameterValueOutOfRangeIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "RequiredAssemblyUnavailableIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "RequiredSequencerUnavailableIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "RequiredServiceUnavailableIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "RequiredHCDUnavailableIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "HCDBusyIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "UnresolvedLocationsIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "UnsupportedCommandInStateIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "UnsupportedCommandIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "WrongInternalStateIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "WrongNumberOfParametersIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "WrongParameterTypeIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "WrongPrefixIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "WrongUnitsIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "WrongCommandTypeIssue",
+        "reason" : "issue"
+      }, {
+        "_type" : "OtherIssue",
+        "reason" : "issue"
+      } ],
+      "SubmitResponse" : [ {
+        "_type" : "Cancelled",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0"
+      }, {
+        "_type" : "Completed",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0",
+        "result" : {
+          "paramSet" : [ {
+            "StringKey" : {
+              "keyName" : "StringKey",
+              "values" : [ "Str1", "Str2" ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "UTCTimeKey" : {
+              "keyName" : "UTCTimeKey",
+              "values" : [ "1970-01-01T00:00:00Z", "2023-04-13T20:23:51.953536907Z" ],
+              "units" : "utc"
+            }
+          }, {
+            "IntKey" : {
+              "keyName" : "IntKey",
+              "values" : [ 70, 80 ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "FloatKey" : {
+              "keyName" : "FloatKey",
+              "values" : [ 90, 100 ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "CharKey" : {
+              "keyName" : "CharKey",
+              "values" : [ "A", "B" ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "LongKey" : {
+              "keyName" : "LongKey",
+              "values" : [ 50, 60 ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "FloatMatrixKey" : {
+              "keyName" : "FloatMatrix",
+              "values" : [ [ [ 16, 17 ], [ 18, 19 ] ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "ChoiceKey" : {
+              "keyName" : "ChoiceKey",
+              "values" : [ "First", "Second" ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "ShortKey" : {
+              "keyName" : "ShortKey",
+              "values" : [ 30, 40 ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "DoubleArrayKey" : {
+              "keyName" : "DoubleArrayKey",
+              "values" : [ [ 11, 12 ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "FloatArrayKey" : {
+              "keyName" : "FloatArrayKey",
+              "values" : [ [ 9, 10 ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "TAITimeKey" : {
+              "keyName" : "TAITimeKey",
+              "values" : [ "1970-01-01T00:00:00Z", "2023-04-13T20:24:28.956187940Z" ],
+              "units" : "tai"
+            }
+          }, {
+            "ByteArrayKey" : {
+              "keyName" : "ByteArrayKey",
+              "values" : [ [ 1, 2 ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "IntArrayKey" : {
+              "keyName" : "IntArrayKey",
+              "values" : [ [ 7, 8 ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "CoordKey" : {
+              "keyName" : "CoordKey",
+              "values" : [ {
+                "_type" : "EqCoord",
+                "tag" : "BASE",
+                "ra" : 659912250000,
+                "dec" : -109892300000,
+                "frame" : "FK5",
+                "catalogName" : "none",
+                "pm" : {
+                  "pmx" : 0.5,
+                  "pmy" : 2.33
+                }
+              }, {
+                "_type" : "SolarSystemCoord",
+                "tag" : "BASE",
+                "body" : "Venus"
+              }, {
+                "_type" : "MinorPlanetCoord",
+                "tag" : "GUIDER1",
+                "epoch" : 2000,
+                "inclination" : 324000000000,
+                "longAscendingNode" : 7200000000,
+                "argOfPerihelion" : 360000000000,
+                "meanDistance" : 1.4,
+                "eccentricity" : 0.234,
+                "meanAnomaly" : 792000000000
+              }, {
+                "_type" : "CometCoord",
+                "tag" : "BASE",
+                "epochOfPerihelion" : 2000,
+                "inclination" : 324000000000,
+                "longAscendingNode" : 7200000000,
+                "argOfPerihelion" : 360000000000,
+                "perihelionDistance" : 1.4,
+                "eccentricity" : 0.234
+              }, {
+                "_type" : "AltAzCoord",
+                "tag" : "BASE",
+                "alt" : 1083600000000,
+                "az" : 153000000000
+              } ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "ByteKey" : {
+              "keyName" : "ByteKey",
+              "values" : [ 10, 20 ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "DoubleMatrixKey" : {
+              "keyName" : "DoubleMatrix",
+              "values" : [ [ [ 20, 21 ], [ 22, 23 ] ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "ShortMatrixKey" : {
+              "keyName" : "ShortMatrix",
+              "values" : [ [ [ 4, 5 ], [ 6, 7 ] ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "BooleanKey" : {
+              "keyName" : "BooleanKey",
+              "values" : [ true, false ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "ByteMatrixKey" : {
+              "keyName" : "ByteMatrix",
+              "values" : [ [ [ 1, 2 ], [ 3, 4 ] ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "IntMatrixKey" : {
+              "keyName" : "IntMatrix",
+              "values" : [ [ [ 12, 13 ], [ 14, 15 ] ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "DoubleKey" : {
+              "keyName" : "DoubleKey",
+              "values" : [ 110, 120 ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "LongMatrixKey" : {
+              "keyName" : "LongMatrix",
+              "values" : [ [ [ 8, 9 ], [ 10, 11 ] ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "LongArrayKey" : {
+              "keyName" : "LongArrayKey",
+              "values" : [ [ 5, 6 ] ],
+              "units" : "NoUnits"
+            }
+          }, {
+            "ShortArrayKey" : {
+              "keyName" : "ShortArrayKey",
+              "values" : [ [ 3, 4 ] ],
+              "units" : "NoUnits"
+            }
+          } ]
+        }
+      }, {
+        "_type" : "Error",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0",
+        "message" : "issue"
+      }, {
+        "_type" : "Invalid",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0",
+        "issue" : {
+          "_type" : "OtherIssue",
+          "reason" : "issue"
+        }
+      }, {
+        "_type" : "Locked",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0"
+      }, {
+        "_type" : "Started",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0"
+      } ],
+      "OnewayResponse" : [ {
+        "_type" : "Accepted",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0"
+      }, {
+        "_type" : "Invalid",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0",
+        "issue" : {
+          "_type" : "OtherIssue",
+          "reason" : "issue"
+        }
+      }, {
+        "_type" : "Locked",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0"
+      } ],
+      "TAITime" : [ "2023-04-13T20:24:28.956187940Z" ],
+      "ValidateResponse" : [ {
+        "_type" : "Accepted",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0"
+      }, {
+        "_type" : "Invalid",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0",
+        "issue" : {
+          "_type" : "OtherIssue",
+          "reason" : "issue"
+        }
+      }, {
+        "_type" : "Locked",
+        "runId" : "1e3c6956-ed8e-423c-878d-7fd88eb014d0"
+      } ],
+      "ControlCommand" : [ {
+        "_type" : "Observe",
+        "source" : "CSW.ncc.trombone",
+        "commandName" : "move",
+        "maybeObsId" : "2020A-001-123",
+        "paramSet" : [ ]
+      }, {
+        "_type" : "Observe",
+        "source" : "CSW.ncc.trombone",
+        "commandName" : "move",
+        "paramSet" : [ ]
+      }, {
+        "_type" : "Setup",
+        "source" : "CSW.ncc.trombone",
+        "commandName" : "move",
+        "maybeObsId" : "2020A-001-123",
+        "paramSet" : [ ]
+      }, {
+        "_type" : "Setup",
+        "source" : "CSW.ncc.trombone",
+        "commandName" : "move",
+        "paramSet" : [ ]
+      } ],
+      "Result" : [ {
+        "paramSet" : [ {
+          "StringKey" : {
+            "keyName" : "StringKey",
+            "values" : [ "Str1", "Str2" ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "UTCTimeKey" : {
+            "keyName" : "UTCTimeKey",
+            "values" : [ "1970-01-01T00:00:00Z", "2023-04-13T20:23:51.953536907Z" ],
+            "units" : "utc"
+          }
+        }, {
+          "IntKey" : {
+            "keyName" : "IntKey",
+            "values" : [ 70, 80 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "FloatKey" : {
+            "keyName" : "FloatKey",
+            "values" : [ 90, 100 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "CharKey" : {
+            "keyName" : "CharKey",
+            "values" : [ "A", "B" ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "LongKey" : {
+            "keyName" : "LongKey",
+            "values" : [ 50, 60 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "FloatMatrixKey" : {
+            "keyName" : "FloatMatrix",
+            "values" : [ [ [ 16, 17 ], [ 18, 19 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ChoiceKey" : {
+            "keyName" : "ChoiceKey",
+            "values" : [ "First", "Second" ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ShortKey" : {
+            "keyName" : "ShortKey",
+            "values" : [ 30, 40 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "DoubleArrayKey" : {
+            "keyName" : "DoubleArrayKey",
+            "values" : [ [ 11, 12 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "FloatArrayKey" : {
+            "keyName" : "FloatArrayKey",
+            "values" : [ [ 9, 10 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "TAITimeKey" : {
+            "keyName" : "TAITimeKey",
+            "values" : [ "1970-01-01T00:00:00Z", "2023-04-13T20:24:28.956187940Z" ],
+            "units" : "tai"
+          }
+        }, {
+          "ByteArrayKey" : {
+            "keyName" : "ByteArrayKey",
+            "values" : [ [ 1, 2 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "IntArrayKey" : {
+            "keyName" : "IntArrayKey",
+            "values" : [ [ 7, 8 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "CoordKey" : {
+            "keyName" : "CoordKey",
+            "values" : [ {
+              "_type" : "EqCoord",
+              "tag" : "BASE",
+              "ra" : 659912250000,
+              "dec" : -109892300000,
+              "frame" : "FK5",
+              "catalogName" : "none",
+              "pm" : {
+                "pmx" : 0.5,
+                "pmy" : 2.33
+              }
+            }, {
+              "_type" : "SolarSystemCoord",
+              "tag" : "BASE",
+              "body" : "Venus"
+            }, {
+              "_type" : "MinorPlanetCoord",
+              "tag" : "GUIDER1",
+              "epoch" : 2000,
+              "inclination" : 324000000000,
+              "longAscendingNode" : 7200000000,
+              "argOfPerihelion" : 360000000000,
+              "meanDistance" : 1.4,
+              "eccentricity" : 0.234,
+              "meanAnomaly" : 792000000000
+            }, {
+              "_type" : "CometCoord",
+              "tag" : "BASE",
+              "epochOfPerihelion" : 2000,
+              "inclination" : 324000000000,
+              "longAscendingNode" : 7200000000,
+              "argOfPerihelion" : 360000000000,
+              "perihelionDistance" : 1.4,
+              "eccentricity" : 0.234
+            }, {
+              "_type" : "AltAzCoord",
+              "tag" : "BASE",
+              "alt" : 1083600000000,
+              "az" : 153000000000
+            } ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ByteKey" : {
+            "keyName" : "ByteKey",
+            "values" : [ 10, 20 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "DoubleMatrixKey" : {
+            "keyName" : "DoubleMatrix",
+            "values" : [ [ [ 20, 21 ], [ 22, 23 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ShortMatrixKey" : {
+            "keyName" : "ShortMatrix",
+            "values" : [ [ [ 4, 5 ], [ 6, 7 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "BooleanKey" : {
+            "keyName" : "BooleanKey",
+            "values" : [ true, false ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ByteMatrixKey" : {
+            "keyName" : "ByteMatrix",
+            "values" : [ [ [ 1, 2 ], [ 3, 4 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "IntMatrixKey" : {
+            "keyName" : "IntMatrix",
+            "values" : [ [ [ 12, 13 ], [ 14, 15 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "DoubleKey" : {
+            "keyName" : "DoubleKey",
+            "values" : [ 110, 120 ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "LongMatrixKey" : {
+            "keyName" : "LongMatrix",
+            "values" : [ [ [ 8, 9 ], [ 10, 11 ] ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "LongArrayKey" : {
+            "keyName" : "LongArrayKey",
+            "values" : [ [ 5, 6 ] ],
+            "units" : "NoUnits"
+          }
+        }, {
+          "ShortArrayKey" : {
+            "keyName" : "ShortArrayKey",
+            "values" : [ [ 3, 4 ] ],
+            "units" : "NoUnits"
+          }
+        } ]
+      } ],
+      "KeyType" : [ "ChoiceKey", "StringKey", "UTCTimeKey", "TAITimeKey", "EqCoordKey", "SolarSystemCoordKey", "MinorPlanetCoordKey", "CometCoordKey", "AltAzCoordKey", "CoordKey", "BooleanKey", "CharKey", "ByteKey", "ShortKey", "LongKey", "IntKey", "FloatKey", "DoubleKey", "ByteArrayKey", "ShortArrayKey", "LongArrayKey", "IntArrayKey", "FloatArrayKey", "DoubleArrayKey", "ByteMatrixKey", "ShortMatrixKey", "LongMatrixKey", "IntMatrixKey", "FloatMatrixKey", "DoubleMatrixKey" ],
+      "OperationalState" : [ "READY", "NOT_READY", "ERROR", "BUSY" ],
+      "UnitsMap" : [ {
+        "data" : {
+          "msun" : "Msun",
+          "jansky" : "Jy",
+          "D" : "Debye",
+          "alpha" : "alpha",
+          "e" : "e",
+          "rgeo" : "Rgeo",
+          "mag" : "mag",
+          "rjup" : "Rjup",
+          "ohm" : "ohm",
+          "degF" : "degF",
+          "gram" : "g",
+          "centimeter" : "cm",
+          "count" : "ct",
+          "micrometer" : "µm",
+          "henry" : "henry",
+          "pi" : "pi",
+          "degC" : "degC",
+          "volt" : "V",
+          "bit" : "bit",
+          "kilogram" : "kg",
+          "ounce" : "oz",
+          "elvolt" : "eV",
+          "degree" : "deg",
+          "meter" : "m",
+          "crab" : "crab",
+          "candela" : "candela",
+          "erg" : "erg",
+          "minute" : "min",
+          "lsun" : "lsun",
+          "u" : "u",
+          "mol" : "mol",
+          "sday" : "sday",
+          "datetime" : "datetime",
+          "liter" : "l",
+          "F" : "F",
+          "rydberg" : "Rydberg",
+          "microarcsec" : "µas",
+          "mmyy" : "mmyy",
+          "seimens" : "seimens",
+          "mmhg" : "mmHg",
+          "inch" : "inch",
+          "pascal" : "Pa",
+          "jd" : "jd",
+          "year" : "yr",
+          "photon" : "photon",
+          "rsun" : "Rsun",
+          "hm" : "hm",
+          "foot" : "ft",
+          "arcsec" : "arcsec",
+          "nanometer" : "nm",
+          "mas" : "mas",
+          "millimeter" : "mm",
+          "hour" : "h",
+          "mp" : "mp",
+          "utc" : "UTC",
+          "ampere" : "A",
+          "hhmmss" : "HH:MM:SS",
+          "cal" : "cal",
+          "minsec" : "m:s",
+          "angstrom" : "Angstrom",
+          "newton" : "N",
+          "week" : "wk",
+          "G" : "G",
+          "millisecond" : "ms",
+          "mile" : "mi",
+          "second" : "s",
+          "tai" : "TAI",
+          "steradian" : "sr",
+          "lx" : "lx",
+          "joule" : "J",
+          "MJD" : "MJD",
+          "encoder" : "enc",
+          "dyn" : "dyne",
+          "date" : "date",
+          "a0" : "a0",
+          "mu0" : "mu0",
+          "me" : "me",
+          "hertz" : "Hz",
+          "kelvin" : "K",
+          "coulomb" : "C",
+          "arcmin" : "arcmin",
+          "muB" : "muB",
+          "pc" : "pc",
+          "bar" : "bar",
+          "watt" : "W",
+          "mjup" : "Mjup",
+          "yard" : "yd",
+          "geoMass" : "geoMass",
+          "NoUnits" : "none",
+          "micron" : "µm",
+          "au" : "AU",
+          "hms" : "hms",
+          "percent" : "percent",
+          "barn" : "barn",
+          "lm" : "lm",
+          "c" : "c",
+          "kilometer" : "km",
+          "ppm" : "ppm",
+          "tesla" : "tesla",
+          "radian" : "rad",
+          "damas" : "d:m:s",
+          "lightyear" : "lyr",
+          "cKayser" : "cKayser",
+          "pound" : "lb",
+          "Wb" : "Wb",
+          "jovmass" : "jovMass",
+          "day" : "d",
+          "gauss" : "gauss",
+          "earth" : "earth",
+          "pix" : "pix",
+          "month" : "month"
+        }
+      } ],
+      "Parameter" : [ {
+        "StringKey" : {
+          "keyName" : "StringKey",
+          "values" : [ "Str1", "Str2" ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "UTCTimeKey" : {
+          "keyName" : "UTCTimeKey",
+          "values" : [ "1970-01-01T00:00:00Z", "2023-04-13T20:23:51.953536907Z" ],
+          "units" : "utc"
+        }
+      }, {
+        "IntKey" : {
+          "keyName" : "IntKey",
+          "values" : [ 70, 80 ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "FloatKey" : {
+          "keyName" : "FloatKey",
+          "values" : [ 90, 100 ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "CharKey" : {
+          "keyName" : "CharKey",
+          "values" : [ "A", "B" ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "LongKey" : {
+          "keyName" : "LongKey",
+          "values" : [ 50, 60 ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "FloatMatrixKey" : {
+          "keyName" : "FloatMatrix",
+          "values" : [ [ [ 16, 17 ], [ 18, 19 ] ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "ChoiceKey" : {
+          "keyName" : "ChoiceKey",
+          "values" : [ "First", "Second" ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "ShortKey" : {
+          "keyName" : "ShortKey",
+          "values" : [ 30, 40 ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "DoubleArrayKey" : {
+          "keyName" : "DoubleArrayKey",
+          "values" : [ [ 11, 12 ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "FloatArrayKey" : {
+          "keyName" : "FloatArrayKey",
+          "values" : [ [ 9, 10 ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "TAITimeKey" : {
+          "keyName" : "TAITimeKey",
+          "values" : [ "1970-01-01T00:00:00Z", "2023-04-13T20:24:28.956187940Z" ],
+          "units" : "tai"
+        }
+      }, {
+        "ByteArrayKey" : {
+          "keyName" : "ByteArrayKey",
+          "values" : [ [ 1, 2 ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "IntArrayKey" : {
+          "keyName" : "IntArrayKey",
+          "values" : [ [ 7, 8 ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "CoordKey" : {
+          "keyName" : "CoordKey",
+          "values" : [ {
+            "_type" : "EqCoord",
+            "tag" : "BASE",
+            "ra" : 659912250000,
+            "dec" : -109892300000,
+            "frame" : "FK5",
+            "catalogName" : "none",
+            "pm" : {
+              "pmx" : 0.5,
+              "pmy" : 2.33
+            }
+          }, {
+            "_type" : "SolarSystemCoord",
+            "tag" : "BASE",
+            "body" : "Venus"
+          }, {
+            "_type" : "MinorPlanetCoord",
+            "tag" : "GUIDER1",
+            "epoch" : 2000,
+            "inclination" : 324000000000,
+            "longAscendingNode" : 7200000000,
+            "argOfPerihelion" : 360000000000,
+            "meanDistance" : 1.4,
+            "eccentricity" : 0.234,
+            "meanAnomaly" : 792000000000
+          }, {
+            "_type" : "CometCoord",
+            "tag" : "BASE",
+            "epochOfPerihelion" : 2000,
+            "inclination" : 324000000000,
+            "longAscendingNode" : 7200000000,
+            "argOfPerihelion" : 360000000000,
+            "perihelionDistance" : 1.4,
+            "eccentricity" : 0.234
+          }, {
+            "_type" : "AltAzCoord",
+            "tag" : "BASE",
+            "alt" : 1083600000000,
+            "az" : 153000000000
+          } ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "ByteKey" : {
+          "keyName" : "ByteKey",
+          "values" : [ 10, 20 ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "DoubleMatrixKey" : {
+          "keyName" : "DoubleMatrix",
+          "values" : [ [ [ 20, 21 ], [ 22, 23 ] ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "ShortMatrixKey" : {
+          "keyName" : "ShortMatrix",
+          "values" : [ [ [ 4, 5 ], [ 6, 7 ] ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "BooleanKey" : {
+          "keyName" : "BooleanKey",
+          "values" : [ true, false ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "ByteMatrixKey" : {
+          "keyName" : "ByteMatrix",
+          "values" : [ [ [ 1, 2 ], [ 3, 4 ] ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "IntMatrixKey" : {
+          "keyName" : "IntMatrix",
+          "values" : [ [ [ 12, 13 ], [ 14, 15 ] ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "DoubleKey" : {
+          "keyName" : "DoubleKey",
+          "values" : [ 110, 120 ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "LongMatrixKey" : {
+          "keyName" : "LongMatrix",
+          "values" : [ [ [ 8, 9 ], [ 10, 11 ] ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "LongArrayKey" : {
+          "keyName" : "LongArrayKey",
+          "values" : [ [ 5, 6 ] ],
+          "units" : "NoUnits"
+        }
+      }, {
+        "ShortArrayKey" : {
+          "keyName" : "ShortArrayKey",
+          "values" : [ [ 3, 4 ] ],
+          "units" : "NoUnits"
+        }
+      } ]
+    },
+    "readme" : "# Command service contract\n\nThis page describes possible ways of accessing command service via HTTP/Websocket and sample JSON representation of request body, response body and error body. \n\n## Command service endpoints \n\n### Http endpoint\n\nThe url - `http://{{host}}:{{port}}/post-endpoint` can be used to access location service\n\nFollowing JSON payloads can be \"post\"ed to the above URL:\n* Validate\n* Submit\n* Query\n* Oneway\n\n### Websocket endpoint\n\nTo execute the `QueryFinal` and `SubscribeCurrentState` request one can \"send\" it to the url - `ws://{{host}}:{{port}}/websocket-endpoint`.\n\n_Note:_\n\nMake sure to replace the `host` and `port` of the running location service on local/remote machine.\n\n## JSON Contract\n\n* Request sample, response types and error types for http endpoint is described in `http-contract.json`     \n* Request sample, response types and error types for webservice endpoint is described in `websocket-contract.json`\n* Samples describing how to create requests, possible responses and possible errors can be found in `models.json`     \n\n"
+  },
+  "config-service" : {
+    "http-contract" : {
+      "endpoints" : [ ],
+      "requests" : { }
+    },
+    "websocket-contract" : {
+      "endpoints" : [ ],
+      "requests" : { }
+    },
+    "models" : {
+      "ConfigFileRevision" : [ {
+        "id" : "config1",
+        "author" : "author_name",
+        "comment" : "some comment",
+        "time" : "2023-04-13T20:23:52.329183275Z"
+      } ],
+      "FileType" : [ "Annex", "Normal" ],
+      "ConfigMetadata" : [ {
+        "repoPath" : "/path",
+        "annexPath" : "/annexPath",
+        "annexMinFileSize" : "10 MiB",
+        "maxConfigFileSize" : "20 MiB"
+      } ],
+      "ConfigId" : [ "config1" ],
+      "ConfigFileInfo" : [ {
+        "path" : "/some-path",
+        "id" : "config1",
+        "author" : "author_name",
+        "comment" : "some comment"
+      } ]
+    },
+    "readme" : "## Config service models\n\nThe following are the models which are used in config service requests and response.\nTheir representation can be found in `config-service/models.json`.\n\n* ConfigId\n* ConfigFileInfo\n* ConfigFileRevision\n* ConfigMetadata\n* FileType\n"
+  }
+}

@@ -11,7 +11,7 @@ class ScalarTests: FunSpec( {
 
     test("Should create scalars") {
 
-        val s1 = Sstore(key, StoredType.INTEGER, "100,200,300")
+        val s1 = Sstore(key, StoredType.INTEGER, arrayOf("100","200","300"))
 
         val r1 = Scalar.create(s1)
         println("r1: $r1")
@@ -22,7 +22,7 @@ class ScalarTests: FunSpec( {
 
     test("conversion tests") {
 
-        val s1 = Sstore(key, StoredType.INTEGER, "100,200,300")
+        val s1 = Sstore(key, StoredType.INTEGER, arrayOf("100","200","300"))
 
         val r1 = Scalar.create(s1)
         println("r1: $r1")
@@ -51,7 +51,7 @@ class ScalarTests: FunSpec( {
 
     test ("conversionDoubleTests") {
 
-        val s1 = Sstore(key, StoredType.NUMBER, "100.23,200.456,300.7890")
+        val s1 = Sstore(key, StoredType.NUMBER, arrayOf("100.23","200.456","300.7890"))
 
         val r1 = Scalar.create(s1)
 
@@ -78,7 +78,7 @@ class ScalarTests: FunSpec( {
 
     test ("conversionBooleanTests()") {
 
-        val s1 = Sstore(key, StoredType.BOOLEAN, "t,f,t")
+        val s1 = Sstore(key, StoredType.BOOLEAN, arrayOf("true","false","true"))
 
         val r1 = Scalar.create(s1)
         println("r1: $r1")

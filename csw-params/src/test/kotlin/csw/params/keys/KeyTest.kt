@@ -1,7 +1,6 @@
 package csw.params.keys
 
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.equals.shouldBeEqual
 import io.kotest.matchers.equals.shouldNotBeEqual
 import io.kotest.matchers.shouldBe
 
@@ -40,7 +39,7 @@ class KeyTest: DescribeSpec({
 
         it("should allow single val | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196") {
             val ii = bk.set(tval)
-            ii.value shouldBe "false"
+            ii.value shouldBe arrayOf("false")
         }
 
         val listIn = listOf(false, true)
@@ -49,8 +48,8 @@ class KeyTest: DescribeSpec({
         // DEOPSCSW-190: Implement Unit Support
         it("should work with list, withUnits | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196, DEOPSCSW-190") {
             val ii = bk.set(listIn.toBooleanArray())
-            ii.svalues[1] shouldBe listOut[1]
-            ii.svalues shouldBe listOut.toTypedArray()
+            ii.value[1] shouldBe listOut[1]
+            ii.value shouldBe listOut.toTypedArray()
         }
     }
 
@@ -89,14 +88,14 @@ class KeyTest: DescribeSpec({
     // DEOPSCSW-186: Binary value payload
     describe("test ByteItem") {
         val tval: Byte = 123
-        val lk         = NumberKey.make(s1, Units.encoder)
+        val lk         = IntegerKey.make(s1, Units.encoder)
 
         it("should allow single val | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196, DEOPSCSW-186") {
             val li = lk.set(tval)
             with (li) {
                 units shouldBe Units.encoder
-                svalues shouldBe arrayOf("123")
-                values shouldBe arrayOf(123.0)
+                values shouldBe arrayOf("123")
+                asDoubles shouldBe arrayOf(123.0)
             }
         }
 
@@ -257,13 +256,14 @@ class KeyTest: DescribeSpec({
     describe("test ShortItem") {
         val tval: Short = 1234
         val tout = arrayOf("1234")
-        val lk = NumberKey(s1, Units.encoder)
+        val lk = IntegerKey(s1, Units.encoder)
 
         it("should allow single val | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196") {
             val li = lk.set(tval)
-            println("out: ${li.svalues.toList()}")
+            println("out: ${li.values.toList()}")
 
-            li.svalues shouldBe tout
+            li.values shouldBe tout
+            li.asDoubles shouldBe arrayOf(1234.0)
         }
 
         val listIn = shortArrayOf(123, 456)
@@ -274,16 +274,16 @@ class KeyTest: DescribeSpec({
             val li = lk.set(listIn)
 
             li.units shouldBe Units.encoder
-            li.svalues[0] shouldBe listOut[0]
-            li.svalues[1] shouldBe listOut[1]
-            li.values shouldBe listIn.map { it.toDouble() }.toDoubleArray()
+            li.values[0] shouldBe listOut[0]
+            li.values[1] shouldBe listOut[1]
+            li.asDoubles shouldBe listIn.map { it.toDouble() }.toDoubleArray()
         }
 
         it("should work with list | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196") {
             val li = lk.set(listIn)
             li.units shouldBe Units.encoder
-            li.svalues[1] shouldBe listOut[1]
-            li.values shouldBe listIn.map { it.toDouble() }.toDoubleArray()
+            li.values[1] shouldBe listOut[1]
+            li.asDoubles shouldBe listIn.map { it.toDouble() }.toDoubleArray()
         }
     }
 
@@ -301,8 +301,8 @@ class KeyTest: DescribeSpec({
 
         it("should test single item | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196") {
             val di = lk.set(a1)
-            di.values shouldBe a1Out
-            di.values[0] shouldBe a1Out[0]
+            di.asDoubles shouldBe a1Out
+            di.asDoubles[0] shouldBe a1Out[0]
         }
     }
 }

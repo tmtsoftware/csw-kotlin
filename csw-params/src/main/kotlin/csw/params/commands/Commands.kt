@@ -4,12 +4,14 @@
 
 package csw.params.commands
 
+import arrow.core.None
 import arrow.core.Option
 import arrow.core.serialization.OptionSerializer
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.params.keys.HasKey
 import csw.params.keys.IsKey
+import csw.params.keys.TestKeys.Qstore
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 
@@ -72,8 +74,9 @@ data class Setup(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Setup) return false
-
         // Compares properties for structural equality
+        if (this.source != other.source) return false
+        if (this.commandName != other.commandName) return false
         return this.source == other.source && this.commandName == other.commandName &&
                 this.parms.containsAll(other.parms) && other.parms.containsAll(parms)
     }

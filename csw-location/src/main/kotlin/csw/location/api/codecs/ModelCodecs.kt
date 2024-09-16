@@ -23,30 +23,6 @@ import java.net.URI
 object ModelCodecs {
 
     private val regmodule = SerializersModule {
-        /*
-        polymorphic((Registration::class)) {
-            subclass(AkkaRegistration::class)
-            subclass(HttpRegistration::class)
-            subclass(TcpRegistration::class)
-        }
-
-         */
-        /*
-        polymorphic((Connection::class)) {
-            subclass(AkkaConnection::class)
-            subclass(HttpConnection::class)
-            subclass(TcpConnection::class)
-        }
-
-         */
-        /*
-        polymorphic(Location::class) {
-            subclass(AkkaLocation::class)
-            subclass(HttpLocation::class)
-            subclass(TcpLocation::class)
-        }
-
-         */
          polymorphic(TrackingEvent::class) {
             subclass(LocationUpdated::class)
             subclass(LocationRemoved::class)
@@ -134,12 +110,8 @@ object ModelCodecs {
     object URISerializer : KSerializer<URI> {
         override val descriptor: SerialDescriptor = buildClassSerialDescriptor("URI") {}
 
-        override fun serialize(encoder: Encoder, value: URI) {
-            encoder.encodeString(value.toString())
-        }
+        override fun serialize(encoder: Encoder, value: URI) = encoder.encodeString(value.toString())
 
-        override fun deserialize(decoder: Decoder): URI {
-            return URI(decoder.decodeString())
-        }
+        override fun deserialize(decoder: Decoder) = URI(decoder.decodeString())
     }
 }

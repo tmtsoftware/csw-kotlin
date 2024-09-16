@@ -41,8 +41,8 @@ class EventsTest: DescribeSpec({
 
             val sc1 = SystemEvent(prefix, eName).add(i1, i2)
             assert(sc1.size == 2)
-            assert(k1.isIn(sc1))
-            assert(k2.isIn(sc1))
+            assert(k1 in sc1)
+            assert(k2 in sc1)
 
             k1.head(sc1).toInt() shouldBe 22
             k2.head(sc1).toInt() shouldBe 44
@@ -88,7 +88,7 @@ class EventsTest: DescribeSpec({
             val sc1 = SystemEvent(prefix, eName).madd(i1, i2)
 
             assert(sc1.size == 2)
-            assert(k1.isIn(sc1))
+            assert(k1 in sc1)
 
             val mutatedSc1 = sc1.remove(k1)
             assert(!k1.isIn(mutatedSc1))

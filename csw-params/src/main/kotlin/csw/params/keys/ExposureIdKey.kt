@@ -22,8 +22,8 @@ data class IdStore(override val name: Key, val idtype: IdType, val value: String
 @Serializable
 data class ExposureIdKey(override val name: Key): IsKey {
 
-    fun set(value: ExposureId, vararg values: ExposureId): IdStore =
-        IdStore(name, IdType.EXID, KeyHelpers.lencode((arrayOf(value) + values).toList()))
+    fun set(value: ExposureId): IdStore =
+        IdStore(name, IdType.EXID, value.toString())
 
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
@@ -36,8 +36,8 @@ data class ExposureIdKey(override val name: Key): IsKey {
 @Serializable
 data class ObsIdKey(override val name: Key): IsKey {
 
-    fun set(value: ObsId, vararg values: ObsId): IdStore =
-        IdStore(name, IdType.OBSID, KeyHelpers.lencode((arrayOf(value) + values).toList()))
+    fun set(value: ObsId): IdStore =
+        IdStore(name, IdType.OBSID, value.toString())
 
     fun isIn(target: HasParms): Boolean = target.exists(this)
 

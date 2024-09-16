@@ -7,3 +7,4 @@ rootProject.name = "csw-kotlin"
 include("csw-params")
 include("csw-time")
 include("csw-location")
+include("csw-event")

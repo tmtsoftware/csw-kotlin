@@ -6,11 +6,9 @@ import csw.time.core.models.UTCTime
 import csw.params.states.StateVariable.DemandState
 import csw.params.states.StateVariable.CurrentState
 import io.kotest.core.spec.style.DescribeSpec
-import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import kotlinx.datetime.DateTimeUnit
-import kotlinx.datetime.format.DateTimeFormat
 import kotlinx.datetime.minus
 
 
@@ -49,7 +47,7 @@ class StateVariablesTest: DescribeSpec({
 
             //access Parameters
             val p1 = intKey.get(ds1)
-            p1.onSome { it.svalue shouldBe intParam.svalues }
+            p1.onSome { it.svalue shouldBe intParam.values }
 
             //access values
             val v1: Array<String> = stringKey.value(ds1)
@@ -107,7 +105,7 @@ class StateVariablesTest: DescribeSpec({
             //access Parameters
 
             val p1 = intKey.get(cs1)
-            p1.onSome { it.svalue shouldBe intParam.svalues }
+            p1.onSome { it.svalue shouldBe intParam.values }
 
             //access values
             val v1: Array<String> = stringKey.value(cs1)

@@ -1,4 +1,4 @@
-//val kotlinVersion = project.properties["kotlinVersion"]
+val kotest_version: String by project
 
 plugins {
     kotlin("jvm")
@@ -12,8 +12,8 @@ dependencies {
     implementation("net.java.dev.jna:jna:5.14.0")
 
     //testImplementation(kotlin("test"))
-    testImplementation("io.kotest:kotest-runner-junit5:${Versions.kotestVersion}")
-    testImplementation("io.kotest:kotest-assertions-core:${Versions.kotestVersion}")
+    testImplementation("io.kotest:kotest-runner-junit5:$kotest_version")
+    testImplementation("io.kotest:kotest-assertions-core:$kotest_version")
     testImplementation("io.kotest.extensions:kotest-assertions-arrow:1.4.0")
 }
 

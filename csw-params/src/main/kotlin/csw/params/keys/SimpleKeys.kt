@@ -2,6 +2,7 @@ package csw.params.keys
 
 import arrow.core.*
 import csw.params.commands.HasParms
+import csw.params.keys.KeyHelpers.toDoubleArray
 import csw.params.keys.StoredType.*
 import kotlinx.serialization.Serializable
 
@@ -10,59 +11,63 @@ enum class StoredType { NUMBER, INTEGER, BOOLEAN, STRING }
 
 @Serializable
 data class Qstore(override val name: Key, val stype: StoredType,
-                  val value: String, val units: Units = Units.NoUnits) : HasKey {
-    val values: Array<Double>
-        get() = KeyHelpers.decodeValue(value)
-    val svalues: Array<String>
-        get() = KeyHelpers.asStrings(value)
+                  val values: Array<String>, val units: Units = Units.NoUnits) : HasKey {
+    val asDoubles: DoubleArray
+        get() = values.toDoubleArray()
 
-    companion object {
-        internal fun getStored(name: Key, target: HasParms): Option<Qstore> {
-            val s: HasKey? = target.nget(name)
-            return if (s is Qstore) Option(s) else None
-        }
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as Qstore
+        if (name != other.name) return false
+        if (!values.contentEquals(other.values)) return false
+        if (units != other.units) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + values.hashCode()
+        result = 31 * result + units.hashCode()
+        return result
     }
 }
 
 data class NumberKey(override val name: Key, val units: Units = Units.NoUnits): IsKey {
     private val notFound = "Parameter set does not contain key: $name"
 
-    fun set(value: Number, vararg values: Number): Qstore {
-        val valueList = (arrayOf(value) + values).toList()
+    fun set(value: Double, vararg values: Double): Qstore =
+        Qstore(name, NUMBER, doubleArrayOf(value, *values).toStrings(), units)
 
-        val result = when (value) {
-            is Double-> Qstore(name, NUMBER, KeyHelpers.lencode(valueList), units)
-            is Float -> Qstore(name, NUMBER, KeyHelpers.lencode(valueList), units)
-            //is Int -> Stored(name, StoredType.INTEGER, sencode(value), units)
-            //is Long -> Stored(name, StoredType.INTEGER, sencode(value), units)
-            is Short -> Qstore(name, NUMBER, KeyHelpers.lencode(valueList), units)
-            is Byte -> Qstore(name, StoredType.INTEGER, KeyHelpers.lencode(valueList), units)
-            else -> throw IllegalArgumentException("Improper type used to set a NumberKey")
-        }
-        return result
+    fun set(value: Float, vararg values: Float): Qstore =
+        Qstore(name, NUMBER, floatArrayOf(value, *values).toStrings(), units)
+
+    fun set(value: DoubleArray): Qstore = Qstore(name, NUMBER, value.toStrings(), units)
+
+    fun set(value: FloatArray): Qstore = Qstore(name, NUMBER, value.toStrings(), units)
+
+    private fun DoubleArray.toStrings(): Array<String> =
+        this.map { it.toString() }.toTypedArray()
+
+    private fun FloatArray.toStrings(): Array<String> =
+        this.map { it.toString() }.toTypedArray()
+
+    fun contains(target: HasParms): Boolean = target.exists(this)
+    fun isIn(target: HasParms): Boolean = contains(target)
+
+    fun get(target: HasParms): Option<Quantity> {
+        val qs = KeyHelpers.getStored<Qstore>(this, target)
+        return qs?.let { qs -> Some(Quantity(qs.values, qs.units)) } ?: None
     }
-
-    fun set(value: DoubleArray): Qstore =
-        Qstore(name, NUMBER, KeyHelpers.aencode(value.toTypedArray()), units)
-
-    fun set(value: FloatArray): Qstore =
-        Qstore(name, NUMBER, KeyHelpers.aencode(value.toTypedArray()), units)
-
-    fun set(value: ShortArray): Qstore =
-        Qstore(name, NUMBER, KeyHelpers.aencode(value.toTypedArray()), units)
-
-    fun isIn(target: HasParms): Boolean = target.exists(this)
-
-    fun get(target: HasParms): Option<Quantity> =
-        Qstore.getStored(name, target).map { Quantity(it.svalues, it.units) }
-
+/*
     fun scalar(target: HasParms): Scalar {
         val q = get(target).getOrElse { throw NoSuchElementException(notFound) }
         return Scalar(q.svalue)
     }
-
+*/
     operator fun invoke(target: HasParms): Quantity = get(target).getOrElse { throw NoSuchElementException(notFound) }
     fun value(s: HasParms): DoubleArray = invoke(s).asDoubleArray()
+    fun value(s: HasParms, index: Int): Double = value(s)[index]
     fun head(s: HasParms): Double = invoke(s).asDoubleArray()[0]
 
     companion object {
@@ -73,17 +78,19 @@ data class NumberKey(override val name: Key, val units: Units = Units.NoUnits): 
 data class IntegerKey(override val name: Key, val units: Units = Units.NoUnits): IsKey {
     private val notFound = "Parameter set does not contain key: $name"
 
-    fun set(value: Number, vararg values: Number): Qstore {
-        val valueList = (arrayOf(value) + values).toList()
-        val result = when (value) {
-            is Int -> Qstore(name, INTEGER, KeyHelpers.lencode(valueList), units)
-            is Long -> Qstore(name, INTEGER, KeyHelpers.lencode(valueList), units)
-            is Short -> Qstore(name, INTEGER, KeyHelpers.lencode(valueList), units)
-            is Byte -> Qstore(name, INTEGER, KeyHelpers.lencode(valueList), units)
-            else -> throw IllegalArgumentException("Improper type used to set an IntegerKey")
-        }
-        return result
-    }
+    fun set(value: Int, vararg values: Int): Qstore =
+        Qstore(name, INTEGER, intArrayOf(value, *values).toStrings(), units)
+
+    fun set(value: Long, vararg values: Long): Qstore =
+        Qstore(name, INTEGER, longArrayOf(value, *values).toStrings(), units)
+
+    fun set(value: Short, vararg values: Short): Qstore =
+        Qstore(name, INTEGER, shortArrayOf(value, *values).toStrings(), units)
+
+    fun set(value: Byte, vararg values: Byte): Qstore =
+        Qstore(name, INTEGER, byteArrayOf(value, *values).toStrings(), units)
+
+    fun set(value: ShortArray): Qstore = Qstore(name, INTEGER, value.toStrings(), units)
 
     fun set(value: IntArray): Qstore =
         Qstore(name, INTEGER, KeyHelpers.aencode(value.toTypedArray()), units)
@@ -91,13 +98,21 @@ data class IntegerKey(override val name: Key, val units: Units = Units.NoUnits):
     fun set(value: LongArray): Qstore =
         Qstore(name, INTEGER, KeyHelpers.aencode(value.toTypedArray()), units)
 
-    fun set(value: ShortArray): Qstore =
-        Qstore(name, INTEGER, KeyHelpers.aencode(value.toTypedArray()), units)
+    private fun IntArray.toStrings(): Array<String> = this.map { it.toString() }.toTypedArray()
 
-    fun isIn(target: HasParms): Boolean = target.exists(this)
+    private fun LongArray.toStrings(): Array<String> = this.map { it.toString() }.toTypedArray()
 
-    fun get(target: HasParms): Option<Quantity> =
-        Qstore.getStored(name, target).map { Quantity(it.svalues, it.units) }
+    private fun ShortArray.toStrings(): Array<String> = this.map { it.toString() }.toTypedArray()
+
+    private fun ByteArray.toStrings(): Array<String> = this.map { it.toString() }.toTypedArray()
+
+    fun contains(target: HasParms): Boolean = target.exists(this)
+    fun isIn(target: HasParms): Boolean = contains(target)
+
+    fun get(target: HasParms): Option<Quantity> {
+        val qs = KeyHelpers.getStored<Qstore>(this, target)
+        return qs?.let { qs -> Some(Quantity(qs.values, qs.units)) } ?: None
+    }
 
     fun get2(target: HasParms, sname: StructKey): Option<Quantity> {
         val x = Struct.getStored(sname.name, target)
@@ -109,16 +124,16 @@ data class IntegerKey(override val name: Key, val units: Units = Units.NoUnits):
         }
         return result
     }
-
+/*
     fun scalar(target: HasParms): Scalar {
         val q = get(target).getOrElse { throw NoSuchElementException(notFound) }
         return Scalar(q.svalue)
     }
-
-    operator fun invoke(target: HasParms): Quantity =
-        get(target).getOrElse { throw NoSuchElementException(notFound) }
+*/
+    operator fun invoke(target: HasParms): Quantity = get(target).getOrElse { throw NoSuchElementException(notFound) }
     fun value(s: HasParms): LongArray = invoke(s).asLongArray()
-    fun head(s: HasParms): Long = invoke(s).asLongArray()[0]
+    fun value(s: HasParms, index: Int): Long = value(s)[index]
+    fun head(s: HasParms): Long = invoke(s).asLong()
 
     // For compatibility
     companion object {
@@ -126,10 +141,26 @@ data class IntegerKey(override val name: Key, val units: Units = Units.NoUnits):
     }
 }
 
+/* SStore has no units */
 @Serializable
-data class Sstore(override val name: Key, val stype: StoredType, val value: String) : HasKey {
-    val svalues: Array<String>
-        get() = KeyHelpers.asStrings(value)
+data class Sstore(override val name: Key, val stype: StoredType, val value: Array<String>) : HasKey {
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as Sstore
+        if (name != other.name) return false
+        if (stype != other.stype) return false
+        if (!value.contentEquals(other.value)) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + stype.hashCode()
+        result = 31 * result + value.contentHashCode()
+        return result
+    }
 
     companion object {
         internal fun getStored(name: Key, target: HasParms): Option<Sstore> {
@@ -143,13 +174,19 @@ data class BooleanKey(override val name: Key): IsKey {
     private val notFound = "Parameter set does not contain key: $name"
 
     fun set(value: Boolean, vararg values: Boolean): Sstore =
-        Sstore(name, BOOLEAN, booleanArrayWrite(booleanArrayOf(value) + values))
+        Sstore(name, BOOLEAN, booleanArrayOf(value, *values).toStrings())
 
-    fun set(value: BooleanArray): Sstore = Sstore(name, BOOLEAN, booleanArrayWrite(value))
+    fun set(value: BooleanArray): Sstore = Sstore(name, BOOLEAN, value.toStrings())
 
-    fun isIn(target: HasParms): Boolean = target.exists(this)
+    fun contains(target: HasParms): Boolean = target.exists(this)
+    fun isIn(target: HasParms): Boolean = contains(target)
 
-    fun get(target: HasParms): Option<Scalar> = Sstore.getStored(name, target).map { Scalar(it.svalues) }
+    fun get(target: HasParms): Option<Scalar> {
+        val ss = KeyHelpers.getStored<Sstore>(this, target)
+        return ss?.let { ss -> Some(Scalar(ss.value)) } ?: None
+    }
+
+    private fun BooleanArray.toStrings(): Array<String> = this.map { it.toString() }.toTypedArray()
 
     fun scalar(target: HasParms): Scalar =
         get(target).getOrElse { throw NoSuchElementException(notFound) }
@@ -159,8 +196,6 @@ data class BooleanKey(override val name: Key): IsKey {
     fun value(s: HasParms, index: Int): Boolean = value(s)[index]
     fun head(s: HasParms): Boolean = value(s, 0)
 
-    private fun booleanArrayWrite(value: BooleanArray): String =
-        KeyHelpers.aencode(value.map { (it).toString()  }.toTypedArray())
 
     // For compatibility
     companion object {
@@ -179,9 +214,10 @@ data class StringKey(override val name: Key): IsKey {
 
     fun set(value: Array<String>): Sstore = Sstore(name, STRING, KeyHelpers.aencode(value))
 
-    fun exists(target: HasParms): Boolean = target.exists(this)
+    fun contains(target: HasParms): Boolean = target.exists(this)
+    fun isIn(target: HasParms): Boolean = contains(target)
 
-    fun get(target: HasParms): Option<Scalar> = Sstore.getStored(name, target).map { Scalar(it.svalues) }
+    fun get(target: HasParms): Option<Scalar> = Sstore.getStored(name, target).map { Scalar(it.value) }
 
     fun scalar(target: HasParms): Scalar =
         get(target).getOrElse { throw NoSuchElementException(notFound) }

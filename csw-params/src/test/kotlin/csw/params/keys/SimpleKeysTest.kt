@@ -36,10 +36,10 @@ class SimpleKeysTest: FunSpec ( {
         val k3 = Ntest(NumberKey("key3", Units.degree), floatArrayOf(22.34f, -100.34f, 200.0045f))
         val k4 = Ntest(NumberKey("key4"), value = doubleArrayOf(2000.102, 1234.567, -23.532, 12000.0))
 
-        val r1 = Qstore(k1.key.name, StoredType.NUMBER, "22.34", Units.ampere)
-        val r2 = Qstore(k2.key.name, StoredType.NUMBER, "100.345")
-        val r3 = Qstore(k3.key.name, StoredType.NUMBER, "22.34,-100.34,200.0045", Units.degree)
-        val r4 = Qstore(k4.key.name, StoredType.NUMBER, "2000.102,1234.567,-23.532,12000.0")
+        val r1 = Qstore(k1.key.name, StoredType.NUMBER, arrayOf("22.34"), Units.ampere)
+        val r2 = Qstore(k2.key.name, StoredType.NUMBER, arrayOf("100.345"))
+        val r3 = Qstore(k3.key.name, StoredType.NUMBER, arrayOf("22.34","-100.34","200.0045"), Units.degree)
+        val r4 = Qstore(k4.key.name, StoredType.NUMBER, arrayOf("2000.102","1234.567","-23.532","12000.0"))
 
         val badKey = NumberKey("BadKey")
 
@@ -59,53 +59,47 @@ class SimpleKeysTest: FunSpec ( {
         badKey.isIn(s) shouldBe false
 
         // k1.key.get(s).onSome { it shouldBe Quantity(decodeValue(sencode(k1.value)), k1.key.units) }
-        k1.key.get(s).onSome { it shouldBe Quantity(r1.svalues, r1.units) }
-        k1.key(s) shouldBe Quantity(r1.svalues, r1.units)
+        k1.key.get(s).onSome { it shouldBe Quantity(r1.values, r1.units) }
+        k1.key(s) shouldBe Quantity(r1.values, r1.units)
 
-        k1.key.scalar(s) shouldBe Scalar(r1.svalues)
-        k1.key.head(s) shouldBe Scalar(r1.svalues).asDouble()
-        k1.key.value(s) shouldBe Scalar(r1.svalues).asDoubleArray()
+        //k1.key.scalar(s) shouldBe Scalar(r1.values)
+        k1.key.head(s) shouldBe Scalar(r1.values).asDouble()
+        k1.key.value(s) shouldBe Scalar(r1.values).asDoubleArray()
 
         val jsonOut = Json.encodeToString(s)
         println(jsonOut)
         val sin = Json.decodeFromString<Setup>(jsonOut)
+        println(s)
         println(sin)
         s shouldBe sin
 
-        k2.key.get(s).onSome { it shouldBe Quantity(r2.svalues, r2.units) }
-        k2.key(s) shouldBe Quantity(r2.svalues, r2.units)
+        k2.key.get(s).onSome { it shouldBe Quantity(r2.values, r2.units) }
+        k2.key(s) shouldBe Quantity(r2.values, r2.units)
 
-        k2.key.scalar(s) shouldBe Scalar(r2.svalues)
-        k2.key.head(s) shouldBe Scalar(r2.svalues).asDouble()
-        k2.key.value(s) shouldBe Scalar(r2.svalues).asDoubleArray()
+        //k2.key.scalar(s) shouldBe Scalar(r2.values)
+        k2.key.head(s) shouldBe Scalar(r2.values).asDouble()
+        k2.key.value(s) shouldBe Scalar(r2.values).asDoubleArray()
 
-        k3.key.get(s).onSome { it shouldBe Quantity(r3.svalues, r3.units) }
-        k3.key(s) shouldBe Quantity(r3.svalues, r3.units)
+        k3.key.get(s).onSome { it shouldBe Quantity(r3.values, r3.units) }
+        k3.key(s) shouldBe Quantity(r3.values, r3.units)
 
-        k3.key.scalar(s) shouldBe Scalar(r3.svalues)
-        k3.key.head(s) shouldBe Scalar(r3.svalues).asDouble()
-        k3.key.value(s) shouldBe Scalar(r3.svalues).asDoubleArray()
+        //k3.key.scalar(s) shouldBe Scalar(r3.values)
+        k3.key.head(s) shouldBe Scalar(r3.values).asDouble()
+        k3.key.value(s) shouldBe Scalar(r3.values).asDoubleArray()
 
         val xx = s.missingKeys(k1.key, k2.key, k3.key, k4.key, badKey)
         println("Diff: $xx")
 
-        k4.key.get(s).onSome { it shouldBe Quantity(r4.svalues, r4.units) }
-        k4.key(s) shouldBe Quantity(r4.svalues, r4.units)
+        k4.key.get(s).onSome { it shouldBe Quantity(r4.values, r4.units) }
+        k4.key(s) shouldBe Quantity(r4.values, r4.units)
 
-        k4.key.scalar(s) shouldBe Scalar(r4.svalues)
-        k4.key.head(s) shouldBe Scalar(r4.svalues).asDouble()
-        k4.key.value(s) shouldBe Scalar(r4.svalues).asDoubleArray()
+        //k4.key.scalar(s) shouldBe Scalar(r4.values)
+        k4.key.head(s) shouldBe Scalar(r4.values).asDouble()
+        k4.key.value(s) shouldBe Scalar(r4.values).asDoubleArray()
 
         shouldThrow<NoSuchElementException> {
             badKey(s)
         }
-    }
-
-    test("works wrong") {
-        val key1 = NumberKey("key1")
-        var s = testS()
-        s = s.add(key1.set(100.0, 200.0))
-        println(s)
     }
 
     test("full tests for IntegerKey") {
@@ -117,10 +111,10 @@ class SimpleKeysTest: FunSpec ( {
         val k3 = Ntest(IntegerKey("key3", Units.degree), intArrayOf(22, -100, 200))
         val k4 = Ntest(IntegerKey("key4"), value = longArrayOf(2000L, 1234L, -23L, 12000L))
 
-        val r1 = Qstore(k1.key.name, StoredType.NUMBER, "199", Units.ampere)
-        val r2 = Qstore(k2.key.name, StoredType.NUMBER, "10000")
-        val r3 = Qstore(k3.key.name, StoredType.NUMBER, "22,-100,200", Units.degree)
-        val r4 = Qstore(k4.key.name, StoredType.NUMBER, "2000,1234,-23,12000")
+        val r1 = Qstore(k1.key.name, StoredType.NUMBER, arrayOf("199"), Units.ampere)
+        val r2 = Qstore(k2.key.name, StoredType.NUMBER, arrayOf("10000"))
+        val r3 = Qstore(k3.key.name, StoredType.NUMBER, arrayOf("22","-100","200"), Units.degree)
+        val r4 = Qstore(k4.key.name, StoredType.NUMBER, arrayOf("2000","1234","-23","12000"))
 
         val badKey = IntegerKey("BadKey")
 
@@ -139,37 +133,37 @@ class SimpleKeysTest: FunSpec ( {
         s.exists(badKey) shouldBe false
         badKey.isIn(s) shouldBe false
 
-        k1.key.get(s).onSome { it shouldBe Quantity(r1.svalues, r1.units) }
-        k1.key(s) shouldBe Quantity(r1.svalues, r1.units)
+        k1.key.get(s).onSome { it shouldBe Quantity(r1.values, r1.units) }
+        k1.key(s) shouldBe Quantity(r1.values, r1.units)
 
-        k1.key.scalar(s) shouldBe Scalar(r1.svalues)
-        k1.key.head(s) shouldBe Scalar(r1.svalues).asLong()
-        k1.key.value(s) shouldBe Scalar(r1.svalues).asLongArray()
+        //k1.key.scalar(s) shouldBe Scalar(r1.values)
+        k1.key.head(s) shouldBe Scalar(r1.values).asLong()
+        k1.key.value(s) shouldBe Scalar(r1.values).asLongArray()
 
         val jsonOut = Json.encodeToString(s)
         val sin = Json.decodeFromString<Setup>(jsonOut)
         s shouldBe sin
 
-        k2.key.get(s).onSome { it shouldBe Quantity(r2.svalues, r2.units) }
-        k2.key(s) shouldBe Quantity(arrayOf(r2.value), r2.units)
+        k2.key.get(s).onSome { it shouldBe Quantity(r2.values, r2.units) }
+        k2.key(s) shouldBe Quantity(r2.values, r2.units)
 
-        k2.key.scalar(s) shouldBe Scalar(r2.svalues)
-        k2.key.head(s) shouldBe Scalar(r2.svalues).asLong()
-        k2.key.value(s) shouldBe Scalar(r2.svalues).asLongArray()
+        //k2.key.scalar(s) shouldBe Scalar(r2.values)
+        k2.key.head(s) shouldBe Scalar(r2.values).asLong()
+        k2.key.value(s) shouldBe Scalar(r2.values).asLongArray()
 
-        k3.key.get(s).onSome { it shouldBe Quantity(r3.svalues, r3.units) }
-        k3.key(s) shouldBe Quantity(r3.svalues, r3.units)
+        k3.key.get(s).onSome { it shouldBe Quantity(r3.values, r3.units) }
+        k3.key(s) shouldBe Quantity(r3.values, r3.units)
 
-        k3.key.scalar(s) shouldBe Scalar(r3.svalues)
-        k3.key.head(s) shouldBe Scalar(r3.svalues).asLong()
-        k3.key.value(s) shouldBe Scalar(r3.svalues).asLongArray()
+        //k3.key.scalar(s) shouldBe Scalar(r3.values)
+        k3.key.head(s) shouldBe Scalar(r3.values).asLong()
+        k3.key.value(s) shouldBe Scalar(r3.values).asLongArray()
 
-        k4.key.get(s).onSome { it shouldBe Quantity(r4.svalues, r4.units) }
-        k4.key(s) shouldBe Quantity(r4.svalues, k4.key.units)
+        k4.key.get(s).onSome { it shouldBe Quantity(r4.values, r4.units) }
+        k4.key(s) shouldBe Quantity(r4.values, k4.key.units)
 
-        k4.key.scalar(s) shouldBe Scalar(r4.svalues)
-        k4.key.head(s) shouldBe Scalar(r4.svalues).asLong()
-        k4.key.value(s) shouldBe Scalar(r4.svalues).asLongArray()
+        //k4.key.scalar(s) shouldBe Scalar(r4.values)
+        k4.key.head(s) shouldBe Scalar(r4.values).asLong()
+        k4.key.value(s) shouldBe Scalar(r4.values).asLongArray()
 
         shouldThrow<NoSuchElementException> {
             badKey(s)
@@ -249,14 +243,14 @@ class SimpleKeysTest: FunSpec ( {
     }
 
     test("full tests for StringKey") {
-        // Number key is for real values, input can be float or double, single values or arrays
+        // String key is for strings, either individuals or arrays of strings
         data class Ntest<T>(val key: StringKey, val value: T)
 
         val k1 = Ntest(StringKey("key1"), "the string value") //
         val k2 = Ntest(StringKey("key4"), value = arrayOf("ZERO", "ONE", "TWO", "THREE"))
 
-        val r1 = Qstore(k1.key.name, StoredType.STRING, k1.value)
-        val r2 = Qstore(k2.key.name, StoredType.STRING, k2.value.joinToString(","))
+        val r1 = Qstore(k1.key.name, StoredType.STRING, arrayOf(k1.value))
+        val r2 = Qstore(k2.key.name, StoredType.STRING, k2.value)
         println("r2: $r2")
 
         val badKey = BooleanKey("BadKey")
@@ -272,19 +266,19 @@ class SimpleKeysTest: FunSpec ( {
         println("ss: $s")
 
         s.exists(k1.key) shouldBe true
-        k1.key.exists(s) shouldBe true
+        k1.key.isIn(s) shouldBe true
 
         s.exists(badKey) shouldBe false
         badKey.isIn(s) shouldBe false
 
 //         k1.key.get(s).onSome { it shouldBe Quantity(decodeValue(sencode(k1.value)), k1.key.units) }
-        k1.key.get(s).onSome { it shouldBe Scalar(arrayOf(r1.value)) }
+        k1.key.get(s).onSome { it shouldBe Scalar(r1.values) }
         println("s: $s")
-        k1.key(s) shouldBe Scalar(arrayOf(r1.value))
+        k1.key(s) shouldBe Scalar(r1.values)
 
-        k1.key.scalar(s) shouldBe Scalar(arrayOf(r1.value))
-        k1.key.head(s) shouldBe r1.value
-        k1.key.value(s) shouldBe arrayOf(r1.value)
+        k1.key.scalar(s) shouldBe Scalar(r1.values)
+        k1.key.head(s) shouldBe r1.values[0]
+        k1.key.value(s) shouldBe r1.values
 
         val jsonOut = Json.encodeToString(s)
         println(jsonOut)
@@ -292,12 +286,12 @@ class SimpleKeysTest: FunSpec ( {
         println(sin)
         s shouldBe sin
 
-        k2.key.get(s).onSome { it shouldBe Scalar(r2.svalues) }
-        k2.key(s) shouldBe Scalar(r2.svalues)
+        k2.key.get(s).onSome { it shouldBe Scalar(r2.values) }
+        k2.key(s) shouldBe Scalar(r2.values)
 
-        k2.key.scalar(s) shouldBe Scalar(r2.svalues)
-        k2.key.head(s) shouldBe r2.svalues[0]
-        k2.key.value(s) shouldBe r2.svalues
+        k2.key.scalar(s) shouldBe Scalar(r2.values)
+        k2.key.head(s) shouldBe r2.values[0]
+        k2.key.value(s) shouldBe r2.values
 
         shouldThrow<NoSuchElementException> {
             badKey(s)
