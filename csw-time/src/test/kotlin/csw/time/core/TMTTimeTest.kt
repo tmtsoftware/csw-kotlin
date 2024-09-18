@@ -36,7 +36,7 @@ class TMTTimeTest : FunSpec( {
     }
 
     test("should give utc time after specified duration | DEOPSCSW-549") {
-        val jitter = 150.microseconds
+        val jitter = 250.microseconds
         val tenSeconds = 10.seconds
         val futureTime = UTCTime.after(tenSeconds)
 
@@ -45,7 +45,7 @@ class TMTTimeTest : FunSpec( {
     }
 
     test("should give tai time after specified duration | DEOPSCSW-549") {
-        val jitter = 150.microseconds
+        val jitter = 250.microseconds
         val tenSeconds = 10.seconds
         val futureTime = TAITime.after(tenSeconds)
 

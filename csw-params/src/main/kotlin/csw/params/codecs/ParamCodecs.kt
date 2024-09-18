@@ -1,22 +1,15 @@
 package csw.params.codecs
 
-import csw.params.codecs.PacketSerializer.dataTypeSerializers
-import csw.params.codecs.PacketSerializer.getPayloadSerializer
-import csw.params.codecs.QstoreSerializer.sss1
 import csw.params.keys.KeyHelpers.toDoubleArray
-import csw.params.keys.NumberKey
 import csw.params.keys.Qstore
 import csw.params.keys.StoredType
 import csw.params.keys.Units
 import kotlinx.serialization.*
-import kotlinx.serialization.builtins.MapEntrySerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.*
 import kotlinx.serialization.json.*
-import java.net.SocketTimeoutException
-import java.util.*
 import kotlin.collections.HashMap
 
 //private typealias SPMap = HashMap<String, ParamCodecs.ParmCore>
@@ -156,26 +149,47 @@ data class Data(val keyType: String, val data: NCore): MyData
 @Serializable
 data class Data2(val keyName: String, val data: ICore): MyData
 
-object TestSerializer: JsonContentPolymorphicSerializer<MyData>(MyData::class) {
-    override fun selectDeserializer(content: JsonElement): DeserializationStrategy<MyData> {
-        println("el: ${content.jsonObject}")
-        val key = content.jsonObject
-        println("Key: $key")
-        val xx = key.toMap()
-        //val xx = key.keys
-        println("xx: $xx")
-        val yy = xx.values
-        println("yy: $yy")
-        val kn = xx["LongKey"]!!.jsonObject["keyName"]!!.jsonPrimitive.content
-        println("kn: $kn")
+//object TestSerializer: JsonContentPolymorphicSerializer<MyData>(MyData::class) {
+//    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<MyData> {
+//        println("el: ${element.jsonObject}")
+//        val key = element.jsonObject
+//        println("Key: $key")
+//        val xx = key.toMap()
+//        //val xx = key.keys
+//        println("xx: $xx")
+//        val yy = xx.values
+//        println("yy: $yy")
+//        val kn = xx["LongKey"]!!.jsonObject["keyName"]!!.jsonPrimitive.content
+//        println("kn: $kn")
+//
+//        return when {
+//            "LongKey" in element.jsonObject -> { println("YES"); Data2.serializer() }
+//            "DoubleKey" in element.jsonObject -> { println("Dobule"); Data.serializer() }
+//            else -> throw IllegalArgumentException("Key type is not supported: $key")
+//        }
+//    }
+//
+//}
 
-        return when {
-            "LongKey" in content.jsonObject -> { println("YES"); Data2.serializer() }
-            "DoubleKey" in content.jsonObject -> { println("Dobule"); Data.serializer() }
-            else -> throw IllegalArgumentException("Key type is not supported: $key")
-        }
+object TestSerializer: JsonTransformingSerializer<Data2>(Data2.serializer()) {
+    override fun transformSerialize(element: JsonElement): JsonElement {
+        require(element is JsonObject)
+        val keyName = element.getValue("keyName").jsonPrimitive.content
+        val data = element.getValue("data").jsonObject
+        return JsonObject(mapOf(keyName to data))
     }
 
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        require(element is JsonObject)
+        val keyName = element.jsonObject.keys.first()
+        val data = element.getValue(keyName).jsonObject
+        return JsonObject(
+            mapOf(
+                "keyName" to JsonPrimitive(keyName),
+                "data" to data
+            )
+        )
+    }
 }
 
 object PacketSerializer: KSerializer<Packet> {

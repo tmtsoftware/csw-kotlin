@@ -122,8 +122,8 @@ class ParmCodecsTest: FunSpec( {
     test("Deserialize is the challenge I guess") {
 
 
-        val t1 = NCore("kimkey", doubleArrayOf(1.0, 2.0, 3.0), Units.ampere)
-        val t2 = ICore("kimkey", longArrayOf(1, 2, 3), Units.ampere)
+//        val t1 = NCore("kimkey", doubleArrayOf(1.0, 2.0, 3.0), Units.ampere)
+//        val t2 = ICore("kimkey", longArrayOf(1, 2, 3), Units.ampere)
 
         val t3 = Data2("LongKey", ICore("Kim1", longArrayOf(1, 2, 3), Units.ampere))
         val jout1 = parmFormat.encodeToString(TestSerializer, t3)
