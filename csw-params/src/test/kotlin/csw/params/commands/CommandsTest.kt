@@ -8,8 +8,14 @@ import csw.params.keys.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.*
+import kotlinx.serialization.json.*
+import kotlinx.serialization.encoding.*
+import kotlinx.serialization.descriptors.*
+
 
 // DEOPSCSW-196: Command Payloads for variable command content
+@OptIn(ExperimentalSerializationApi::class)
 class CommandsTest: DescribeSpec({
 
     //#obsid
@@ -60,6 +66,13 @@ class CommandsTest: DescribeSpec({
 
             //create Setup, add sequentially using add
             val sc1: Setup = Setup(prefix, "move", Some(obsId)).add(i1).add(i2)
+
+            val parmFormat = Json {
+                prettyPrint = true
+                //classDiscriminatorMode = ClassDiscriminatorMode.NONE
+            }
+            val s = parmFormat.encodeToString(sc1)
+            println("XXX $s")
 
             //access keys
             val k1Exists: Boolean = sc1.exists(k1) //true

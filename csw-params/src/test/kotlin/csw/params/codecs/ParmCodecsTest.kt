@@ -1,9 +1,6 @@
 package csw.params.codecs
 
-import csw.params.keys.IntegerKey
-import csw.params.keys.Units
-import csw.params.keys.NumberKey
-import csw.params.keys.Qstore
+import csw.params.keys.*
 import io.kotest.assertions.json.shouldEqualJson
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

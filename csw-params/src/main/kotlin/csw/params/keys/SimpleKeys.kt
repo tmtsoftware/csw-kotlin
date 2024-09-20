@@ -1,15 +1,69 @@
 package csw.params.keys
 
 import arrow.core.*
+import csw.params.codecs.IntegerCore
+import csw.params.codecs.NumberCore
 import csw.params.commands.HasParms
 import csw.params.keys.KeyHelpers.toDoubleArray
 import csw.params.keys.StoredType.*
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 
 enum class StoredType { NUMBER, INTEGER, BOOLEAN, STRING }
 
-@Serializable
+object QstoreSerializer: KSerializer<Qstore> {
+    val sss1: KSerializer<Map<String, NumberCore>> = MapSerializer(String.serializer(), NumberCore.serializer())
+    val sss2: KSerializer<Map<String, IntegerCore>> = MapSerializer(String.serializer(), IntegerCore.serializer())
+
+    override val descriptor = sss2.descriptor
+
+    override fun serialize(encoder: Encoder, value: Qstore) {
+        val keyType: String = when (value.stype) {
+            StoredType.NUMBER -> "DoubleKey"
+            StoredType.INTEGER -> "LongKey"
+            StoredType.STRING -> "StringKey"
+            StoredType.BOOLEAN -> "BooleanKey"
+        }
+        when (value.stype) {
+            StoredType.NUMBER -> {
+                encoder.encodeSerializableValue(sss1, hashMapOf(keyType to NumberCore(value.name, value.asDoubles, value.units)))
+            }
+            StoredType.INTEGER -> {
+                println("KeyType: $keyType")
+                encoder.encodeSerializableValue(sss2, hashMapOf(keyType to IntegerCore(value.name, value.values.map { it.toLong()}.toLongArray(), value.units)))
+            }
+            else -> throw IllegalArgumentException("Bummer")
+        }
+    }
+
+    override fun deserialize(decoder: Decoder): Qstore {
+        val spmap = decoder.decodeSerializableValue(sss1)
+        val (keyType, param) = spmap.entries.first()
+        val stored = when (keyType) {
+            "DoubleKey" -> StoredType.NUMBER
+            "FloatKey" -> StoredType.NUMBER
+            "IntKey" -> StoredType.INTEGER
+            "LongKey" -> StoredType.INTEGER
+            "ShortKey" -> StoredType.INTEGER
+            "StringKey" -> StoredType.STRING
+            "BooleanKey" -> StoredType.BOOLEAN
+            else -> throw IllegalArgumentException("Key type is not supported: $keyType")
+        }
+        val qs = when (stored) {
+            StoredType.NUMBER -> Qstore(param.keyName, stored, param.values.map { it.toString() }.toTypedArray(), param.units)
+            StoredType.INTEGER -> Qstore(param.keyName, stored, param.values.map { it.toLong().toString() }.toTypedArray(), param.units)
+            else -> throw IllegalArgumentException("Key type is not supported: $stored")
+        }
+        return qs
+    }
+}
+
+@Serializable(with = QstoreSerializer::class)
 data class Qstore(override val name: Key, val stype: StoredType,
                   val values: Array<String>, val units: Units = Units.NoUnits) : HasKey {
     val asDoubles: DoubleArray
