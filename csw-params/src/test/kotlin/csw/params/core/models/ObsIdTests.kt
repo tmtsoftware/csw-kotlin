@@ -48,9 +48,8 @@ class ObsIdTest: FunSpec( {
     test("Should serialize and deserialize obsId") {
         val obsId = ObsId("2020A-001-123")
         val json = Json.encodeToString(obsId)
-        println("json: $json")
+        json shouldBe "\"2020A-001-123\""
         val objIn = Json.decodeFromString<ObsId>(json)
-        //println("objIn: $objIn")
         objIn shouldBe obsId
     }
 

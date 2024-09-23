@@ -138,7 +138,7 @@ class ParmCodecsTest: FunSpec( {
 
         println("Jsonout: $example")
 
-        val obj2:Data2 = parmFormat.decodeFromString(TestSerializer, example) as Data2
+        val obj2:Data2 = parmFormat.decodeFromString(TestSerializer, example)
         println("Objs2: $obj2")
     }
 

@@ -18,6 +18,11 @@ import kotlinx.serialization.descriptors.*
 @OptIn(ExperimentalSerializationApi::class)
 class CommandsTest: DescribeSpec({
 
+    val parmFormat = Json {
+        prettyPrint = true
+        //classDiscriminatorMode = ClassDiscriminatorMode.NONE
+    }
+
     //#obsid
     val obsId: ObsId = ObsId("2020A-001-123")
     //#obsid
@@ -67,10 +72,7 @@ class CommandsTest: DescribeSpec({
             //create Setup, add sequentially using add
             val sc1: Setup = Setup(prefix, "move", Some(obsId)).add(i1).add(i2)
 
-            val parmFormat = Json {
-                prettyPrint = true
-                //classDiscriminatorMode = ClassDiscriminatorMode.NONE
-            }
+            // Test Setup JSON I/O
             val s = parmFormat.encodeToString(sc1)
             println("XXX $s")
 

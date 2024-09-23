@@ -32,8 +32,6 @@ val parmFormat = Json {
 val dconvert = { sa:  Array<String> -> sa.toDoubleArray() }
 val lconvert = { sa: Array<String> -> sa.map { it.toLong() }.toLongArray() }
 
-
-
 @Serializable
 data class NumberCore(val keyName: String, val values: DoubleArray, val units: Units)
 @Serializable
@@ -97,34 +95,16 @@ data class Packet(val keyType: String, val payload: CSWValues) {
 
 sealed interface MyData
 @Serializable
-@SerialName("keyType")
 data class Data(val keyType: String, val data: NCore): MyData
-@Serializable
+
+
+// Note: Can't use (with = TestSerializer) here, due to circular reference: See https://github.com/Kotlin/kotlinx.serialization/issues/1169
+@OptIn(InternalSerializationApi::class)
+@Serializable(with = TestSerializer::class)
+@KeepGeneratedSerializer
 data class Data2(val keyName: String, val data: ICore): MyData
 
-//object TestSerializer: JsonContentPolymorphicSerializer<MyData>(MyData::class) {
-//    override fun selectDeserializer(element: JsonElement): DeserializationStrategy<MyData> {
-//        println("el: ${element.jsonObject}")
-//        val key = element.jsonObject
-//        println("Key: $key")
-//        val xx = key.toMap()
-//        //val xx = key.keys
-//        println("xx: $xx")
-//        val yy = xx.values
-//        println("yy: $yy")
-//        val kn = xx["LongKey"]!!.jsonObject["keyName"]!!.jsonPrimitive.content
-//        println("kn: $kn")
-//
-//        return when {
-//            "LongKey" in element.jsonObject -> { println("YES"); Data2.serializer() }
-//            "DoubleKey" in element.jsonObject -> { println("Dobule"); Data.serializer() }
-//            else -> throw IllegalArgumentException("Key type is not supported: $key")
-//        }
-//    }
-//
-//}
-
-object TestSerializer: JsonTransformingSerializer<Data2>(Data2.serializer()) {
+object TestSerializer: JsonTransformingSerializer<Data2>(Data2.generatedSerializer()) {
     override fun transformSerialize(element: JsonElement): JsonElement {
         require(element is JsonObject)
         val keyName = element.getValue("keyName").jsonPrimitive.content
@@ -144,6 +124,8 @@ object TestSerializer: JsonTransformingSerializer<Data2>(Data2.serializer()) {
         )
     }
 }
+
+
 
 object PacketSerializer: KSerializer<Packet> {
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Packet") {

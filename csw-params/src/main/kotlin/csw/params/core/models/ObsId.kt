@@ -2,7 +2,13 @@ package csw.params.core.models
 
 import arrow.core.Option
 import arrow.core.Some
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
 /**
  * Represents a unique observation id
@@ -10,7 +16,7 @@ import kotlinx.serialization.Serializable
  * @param programId represents program Id
  * @param observationNumber Unique observation number in pattern O followed by 3-digit number
  */
-@Serializable
+@Serializable(with = ObsIdSerializer::class)
 data class ObsId(val programId: ProgramId, val observationNumber: Int) {
     init {
         require(observationNumber in 1..999) {
@@ -56,4 +62,17 @@ data class ObsId(val programId: ProgramId, val observationNumber: Int) {
         }
     }
 }
+
+object ObsIdSerializer : KSerializer<ObsId> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("ObsId", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ObsId) {
+        encoder.encodeString(value.toString())
+    }
+
+    override fun deserialize(decoder: Decoder): ObsId {
+        return ObsId(decoder.decodeString())
+    }
+}
+
 
