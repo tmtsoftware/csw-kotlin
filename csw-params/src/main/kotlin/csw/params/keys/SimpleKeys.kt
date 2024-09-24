@@ -199,21 +199,12 @@ object SstoreSerializer : JsonTransformingSerializer<Sstore>(Sstore.generatedSer
     override fun transformSerialize(element: JsonElement): JsonElement {
         require(element is JsonObject)
         val stype = StoredType.valueOf(element.getValue("stype").jsonPrimitive.content)
-        val keyType: String = when (stype) {
-            StoredType.NUMBER -> "DoubleKey"
-            StoredType.INTEGER -> "LongKey"
-            StoredType.STRING -> "StringKey"
-            StoredType.BOOLEAN -> "BooleanKey"
-        }
         val values = when (stype) {
-            StoredType.NUMBER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toDouble()) }
-            StoredType.INTEGER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toInt()) }
-            StoredType.STRING -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
-            StoredType.BOOLEAN -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toBoolean()) }
+            StoredType.STRING -> element.getValue("value").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
             else -> throw IllegalArgumentException("Bummer")
         }
         return buildJsonObject {
-            putJsonObject(keyType) {
+            putJsonObject("StringKey") {
                 put("keyName", element.getValue("name").jsonPrimitive.content)
                 putJsonArray("values") {
                     addAll(values)
