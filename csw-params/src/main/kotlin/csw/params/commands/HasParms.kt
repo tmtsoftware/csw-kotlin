@@ -1,33 +1,33 @@
 package csw.params.commands
 
-import arrow.core.None
 import arrow.core.Option
 import arrow.core.tail
 import arrow.core.toOption
 import csw.params.keys.HasKey
 import csw.params.keys.IsKey
 import csw.params.keys.Key
-import csw.params.keys.TestKeys.Qstore
+import kotlinx.serialization.Serializable
 
 typealias ParmsList = List<HasKey>
 
 interface HasParms {
 
-    var parms: ParmsList
+    // Note: This needs to be called paramSet to match the CSW JSON format, or else a JSON transformer needs to rename it
+    var paramSet: ParmsList
 
     /**
      * Size property returns the number of entries in the command
      */
     val size: Int
-        get() = parms.size
+        get() = paramSet.size
 
     fun exists(key: IsKey): Boolean = nget(key.name) != null
 
     operator fun contains(key: IsKey): Boolean = exists(key)
 
-    fun keys(): List<Key> = parms.map { it.name }
+    fun keys(): List<Key> = paramSet.map { it.name }
 
-    fun nget(name: Key): HasKey? = parms.firstOrNull { it.name == name }
+    fun nget(name: Key): HasKey? = paramSet.firstOrNull { it.name == name }
 
     fun get(name: Key): Option<HasKey> = nget(name).toOption()
 
@@ -61,7 +61,7 @@ interface HasParms {
      */
     fun missingKeys(vararg keys: IsKey): Set<String> {
         val argKeySet        = keys.map { it.name }.toSet()
-        val parmsKeys = parms.map { it.name }.toSet()
+        val parmsKeys = paramSet.map { it.name }.toSet()
         return argKeySet - parmsKeys
     }
 }

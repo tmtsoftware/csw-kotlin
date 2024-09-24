@@ -98,7 +98,6 @@ sealed interface MyData
 data class Data(val keyType: String, val data: NCore): MyData
 
 
-// Note: Can't use (with = TestSerializer) here, due to circular reference: See https://github.com/Kotlin/kotlinx.serialization/issues/1169
 @OptIn(InternalSerializationApi::class)
 @Serializable(with = TestSerializer::class)
 @KeepGeneratedSerializer

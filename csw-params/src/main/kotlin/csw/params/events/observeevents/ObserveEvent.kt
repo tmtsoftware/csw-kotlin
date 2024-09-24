@@ -18,8 +18,9 @@ data class ObserveEvent private constructor(
     override val source: Prefix,
     override val eventName: EventName,
     override val eventTime: UTCTime,
-    override var parms: ParmsList = emptyList()
+    override var paramSet: ParmsList = emptyList()
 ): HasParms, Event {
+    
 
     /**
      * Create a new ObserveEvent instance when a parameter is added or removed
@@ -33,11 +34,11 @@ data class ObserveEvent private constructor(
     override val typeName = "ObserveEvent"
 
     fun add(item1: HasKey, vararg items: HasKey): ObserveEvent =
-        copy(eventId = Id(), parms = padd(this.parms, listOf(item1) + items.toList()))
+        copy(eventId = Id(), paramSet = padd(this.paramSet, listOf(item1) + items.toList()))
 
-    fun madd(vararg items: HasKey): ObserveEvent = copy(eventId = Id(), parms = padd(this.parms, items.toList()))
+    fun madd(vararg items: HasKey): ObserveEvent = copy(eventId = Id(), paramSet = padd(this.paramSet, items.toList()))
 
-    fun remove(item: IsKey): ObserveEvent = copy(eventId = Id(), parms = removeOne(this.parms, item))
+    fun remove(item: IsKey): ObserveEvent = copy(eventId = Id(), paramSet = removeOne(this.paramSet, item))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -45,13 +46,13 @@ data class ObserveEvent private constructor(
 
         // Compares properties for structural equality
         return this.source == other.source && this.eventName == other.eventName &&
-                this.parms.containsAll(other.parms) && other.parms.containsAll(parms)
+                this.paramSet.containsAll(other.paramSet) && other.paramSet.containsAll(paramSet)
     }
 
     override fun hashCode(): Int {
         var result = source.hashCode()
         result = 31 * result + eventName.hashCode()
-        result = 31 * result + parms.hashCode()
+        result = 31 * result + paramSet.hashCode()
         return result
     }
 

@@ -203,7 +203,7 @@ class StateVariablesTest: DescribeSpec({
             )
 
             //four duplicate keys are removed; now contains one Encoder and one Filter key
-            val uniqueKeys1 = statusEvent.parms.map { it.name }
+            val uniqueKeys1 = statusEvent.paramSet.map { it.name }
 
             //try adding duplicate keys via add + madd
             val changedStatusEvent = statusEvent
@@ -215,12 +215,12 @@ class StateVariablesTest: DescribeSpec({
                 )
 
             //duplicate keys will not be added. Should contain one Encoder and one Filter key
-            val uniqueKeys2 = changedStatusEvent.parms.map { it.name}
+            val uniqueKeys2 = changedStatusEvent.paramSet.map { it.name}
 
             //miscKey(unique) will be added; encoderKey(duplicate) will not be added
             val finalStatusEvent = statusEvent.madd(miscParam1, encParam1)
             //now contains encoderKey, filterKey, miscKey
-            val uniqueKeys3 = finalStatusEvent.parms.map { it.name }
+            val uniqueKeys3 = finalStatusEvent.paramSet.map { it.name }
 
             //validations
             uniqueKeys1 shouldContainExactlyInAnyOrder listOf(encoderKey.name, filterKey.name)

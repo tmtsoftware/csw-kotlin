@@ -6,25 +6,26 @@ import csw.params.keys.HasKey
 /**
  * A result containing parameters for command response
  */
-data class Result (override var parms: List<HasKey> = emptyList()): HasParms {
+data class Result (override var paramSet: List<HasKey> = emptyList()): HasParms {
+    
 
-    fun nonEmpty(): Boolean = parms.isNotEmpty()
+    fun nonEmpty(): Boolean = paramSet.isNotEmpty()
 
     fun add(item1: HasKey, vararg items: HasKey): Result =
-        copy(parms = padd(this.parms, items.toList() + item1))
+        copy(paramSet = padd(this.paramSet, items.toList() + item1))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Result) return false
 
         // Compares properties for structural equality return
-        return this.parms.containsAll(other.parms) && other.parms.containsAll(parms)
+        return this.paramSet.containsAll(other.paramSet) && other.paramSet.containsAll(paramSet)
     }
 
     /**
      * A String representation for concrete implementation of this trait
      */
-    override fun toString(): String = "Result($parms)"
+    override fun toString(): String = "Result($paramSet)"
 
     companion object {
 

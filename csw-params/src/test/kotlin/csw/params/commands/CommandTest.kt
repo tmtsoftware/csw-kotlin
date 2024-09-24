@@ -72,7 +72,7 @@ class CommandTests: FunSpec( {
         s2.size shouldBe 1
 
         // Now add s2's parms to s
-        s = s.madd(s2.parms)
+        s = s.madd(s2.paramSet)
 
         s.size shouldBe 3
         s.exists(key1) shouldBe true

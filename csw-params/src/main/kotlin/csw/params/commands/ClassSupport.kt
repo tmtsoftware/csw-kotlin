@@ -52,6 +52,6 @@ data class Command1(val keyName: String, val voltageIn: Double, val sel: Selecti
         val arg1 = key1.head(storeIn)
         val arg2: Choice = key2.head(storeIn)
 
-        return Command1("bob", arg1, Selection.B, storeIn.obsId)
+        return Command1("bob", arg1, Selection.B, storeIn.maybeObsId)
     }
 }

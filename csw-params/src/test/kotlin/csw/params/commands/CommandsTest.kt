@@ -20,7 +20,8 @@ class CommandsTest: DescribeSpec({
 
     val parmFormat = Json {
         prettyPrint = true
-        //classDiscriminatorMode = ClassDiscriminatorMode.NONE
+//        classDiscriminator = "_type"
+        classDiscriminatorMode = ClassDiscriminatorMode.NONE
     }
 
     //#obsid
@@ -74,7 +75,7 @@ class CommandsTest: DescribeSpec({
 
             // Test Setup JSON I/O
             val s = parmFormat.encodeToString(sc1)
-            println("XXX $s")
+            println("XXX-----------\n $s\n-----------------------")
 
             //access keys
             val k1Exists: Boolean = sc1.exists(k1) //true
@@ -104,7 +105,7 @@ class CommandsTest: DescribeSpec({
             val sc4: Setup = sc3.remove(byteKey1)
 
             //list all keys
-            val allKeys: Set<Key> = sc4.parms.map { it.name }.toSet()
+            val allKeys: Set<Key> = sc4.paramSet.map { it.name }.toSet()
 
             //#setup
 

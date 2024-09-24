@@ -49,7 +49,7 @@ sealed interface StateVariable {
          * @return true if the demand and current states match (in this case, are equal)
          */
         fun defaultMatcher(demand: DemandState, current: CurrentState): Boolean =
-            demand.stateName == current.stateName && demand.prefix == current.prefix && demand.parms == current.parms
+            demand.stateName == current.stateName && demand.prefix == current.prefix && demand.paramSet == current.paramSet
     }
 
     /**
@@ -57,14 +57,15 @@ sealed interface StateVariable {
      *
      * @param prefix identifies the target subsystem
      * @param stateName identifies the name of the state
-     * @param parms initial set of items (keys with values)
+     * @param paramSet initial set of items (keys with values)
      */
     data class DemandState private constructor (
         override val prefix: Prefix,
         override val stateName: StateName,
-        override var parms: List<HasKey> = emptyList()
+        override var paramSet: List<HasKey> = emptyList()
     ) : HasParms,
         StateVariable {
+        
 
 
         /**
@@ -73,13 +74,13 @@ sealed interface StateVariable {
         //fun constructor(stateName: StateName, command: Setup) = this(command.source, stateName, command.paramSet)
 
         fun add(item1: HasKey, vararg items: HasKey): DemandState =
-            copy(parms = padd(this.parms, listOf(item1) + items.toList()))
+            copy(paramSet = padd(this.paramSet, listOf(item1) + items.toList()))
 
-        fun madd(parmsToAdd: ParmsList): DemandState = copy(parms = padd(parms, parmsToAdd))
+        fun madd(parmsToAdd: ParmsList): DemandState = copy(paramSet = padd(paramSet, parmsToAdd))
 
-        fun madd(vararg items: HasKey): DemandState = copy(parms = padd(this.parms, items.toList()))
+        fun madd(vararg items: HasKey): DemandState = copy(paramSet = padd(this.paramSet, items.toList()))
 
-        fun remove(item: IsKey): DemandState = copy(parms = removeOne(this.parms, item))
+        fun remove(item: IsKey): DemandState = copy(paramSet = removeOne(this.paramSet, item))
 
         override val typeName = "DemandState"
 
@@ -103,21 +104,22 @@ sealed interface StateVariable {
      *
      * @param prefix       identifies the target subsystem
      * @param stateName identifies the name of the state
-     * @param parms     an optional initial set of items (keys with values)
+     * @param paramSet     an optional initial set of items (keys with values)
      */
     data class CurrentState private constructor (
         override val prefix: Prefix, override val stateName: StateName,
-        override var parms: List<HasKey> = emptyList()
+        override var paramSet: List<HasKey> = emptyList()
     ) : HasParms, StateVariable {
+        
 
         fun add(item1: HasKey, vararg items: HasKey): CurrentState =
-            copy(parms = padd(this.parms, listOf(item1) + items.toList()))
+            copy(paramSet = padd(this.paramSet, listOf(item1) + items.toList()))
 
-        fun madd(parmsToAdd: ParmsList): CurrentState = copy(parms = padd(parms, parmsToAdd))
+        fun madd(parmsToAdd: ParmsList): CurrentState = copy(paramSet = padd(paramSet, parmsToAdd))
 
-        fun madd(vararg items: HasKey): CurrentState = copy(parms = padd(this.parms, items.toList()))
+        fun madd(vararg items: HasKey): CurrentState = copy(paramSet = padd(this.paramSet, items.toList()))
 
-        fun remove(item: IsKey): CurrentState = copy(parms = removeOne(this.parms, item))
+        fun remove(item: IsKey): CurrentState = copy(paramSet = removeOne(this.paramSet, item))
 
         override val typeName = "CurrentState"
 

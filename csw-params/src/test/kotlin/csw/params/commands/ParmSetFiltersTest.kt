@@ -24,27 +24,27 @@ class ParmSetFiltersTest: FunSpec( {
     test("unique keys test") {
 
         val s = testS().madd(k1.set(1), k2.set(2), k3.set(3), k4.set(4), k5.set(5), k6.set(6), k7.set(7))
-        val r1 = ParmSetFilters.keys(s.parms)
+        val r1 = ParmSetFilters.keys(s.paramSet)
         r1.size shouldBe 7
         r1 shouldContainExactlyInAnyOrder listOf("k1", "k2", "a.b.k3", "a.b.k4", "a.k5", "a.k6", "a.b.c.k7")
     }
 
     test("final names key test") {
         val s = testS().madd(k1.set(1), k2.set(2), k3.set(3), k4.set(4), k5.set(5), k6.set(6), k7.set(7))
-        val r1 = ParmSetFilters.finalKeyNames(s.parms)
+        val r1 = ParmSetFilters.finalKeyNames(s.paramSet)
         r1.size shouldBe 7
         r1 shouldContainExactlyInAnyOrder listOf("k1", "k2", "k3", "k4", "k5", "k6", "k7")
     }
 
     test("first part of unique key roots test") {
         val s = testS().madd(k1.set(1), k2.set(2), k3.set(3), k4.set(4), k5.set(5), k6.set(6), k7.set(7))
-        val r1 = ParmSetFilters.keyRoots(s.parms)
+        val r1 = ParmSetFilters.keyRoots(s.paramSet)
         r1 shouldContainExactlyInAnyOrder listOf("k1", "k2", "a.b", "a", "a.b.c")
     }
 
     test("match key starting strings test") {
         val s = testS().madd(k1.set(1), k2.set(2), k3.set(3), k4.set(4), k5.set(5), k6.set(6), k7.set(7))
-        val r1 = ParmSetFilters.startWith("a.b", s.parms)
+        val r1 = ParmSetFilters.startWith("a.b", s.paramSet)
         r1 shouldContainExactlyInAnyOrder listOf("a.b.k3", "a.b.k4", "a.b.c.k7")
     }
 
@@ -64,7 +64,7 @@ class ParmSetFiltersTest: FunSpec( {
 
     test("match key exactly") {
         val s = testS().madd(k1.set(1), k2.set(2), k3.set(3), k4.set(4), k5.set(5), k6.set(6), k7.set(7))
-        val r1 = ParmSetFilters.keysStartExactly("a.b", s.parms)
+        val r1 = ParmSetFilters.keysStartExactly("a.b", s.paramSet)
         r1 shouldContainExactlyInAnyOrder listOf("a.b.k3", "a.b.k4")
     }
 
