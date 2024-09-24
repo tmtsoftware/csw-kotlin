@@ -42,6 +42,7 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
 
     override fun transformDeserialize(element: JsonElement): JsonElement {
         require(element is JsonObject)
+        // skip "type" key
         val keyType = element.jsonObject.keys.tail().first()
         val stype = when (keyType) {
             "LongKey" -> INTEGER
