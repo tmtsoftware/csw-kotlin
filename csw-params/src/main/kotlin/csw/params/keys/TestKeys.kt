@@ -3,6 +3,7 @@ package csw.params.keys
 import arrow.core.*
 import csw.params.commands.HasParms
 import csw.params.keys.StoredType.NUMBER
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 object TestKeys {

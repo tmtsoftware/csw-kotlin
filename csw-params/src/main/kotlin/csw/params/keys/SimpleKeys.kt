@@ -14,18 +14,18 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
     @OptIn(ExperimentalSerializationApi::class)
     override fun transformSerialize(element: JsonElement): JsonElement {
         require(element is JsonObject)
-        val stype = StoredType.valueOf(element.getValue("stype").jsonPrimitive.content)
+        val stype = valueOf(element.getValue("stype").jsonPrimitive.content)
         val keyType: String = when (stype) {
-            StoredType.NUMBER -> "DoubleKey"
-            StoredType.INTEGER -> "LongKey"
-            StoredType.STRING -> "StringKey"
-            StoredType.BOOLEAN -> "BooleanKey"
+            NUMBER -> "DoubleKey"
+            INTEGER -> "LongKey"
+            STRING -> "StringKey"
+            BOOLEAN -> "BooleanKey"
         }
         val values = when (stype) {
-            StoredType.NUMBER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toDouble()) }
-            StoredType.INTEGER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toInt()) }
-            StoredType.STRING -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
-            StoredType.BOOLEAN -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toBoolean()) }
+            NUMBER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toDouble()) }
+            INTEGER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toInt()) }
+            STRING -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
+            BOOLEAN -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toBoolean()) }
             else -> throw IllegalArgumentException("Bummer")
         }
         return buildJsonObject {
@@ -41,14 +41,24 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
     }
 
     override fun transformDeserialize(element: JsonElement): JsonElement {
-        // XXX TODO
         require(element is JsonObject)
-        val keyName = element.jsonObject.keys.first()
-        val data = element.getValue(keyName).jsonObject
+        val keyType = element.jsonObject.keys.tail().first()
+        val stype = when (keyType) {
+            "LongKey" -> INTEGER
+            "DoubleKey" -> NUMBER
+            "StringKey" -> STRING
+            "BooleanKey" -> BOOLEAN
+            else -> throw IllegalArgumentException("Bummer")
+        }
+        val data = element.getValue(keyType).jsonObject
+        val values = JsonArray(data["values"]!!.jsonArray.map {JsonPrimitive(it.toString())})
         return JsonObject(
             mapOf(
-                "keyName" to JsonPrimitive(keyName),
-                "data" to data
+                "type" to JsonPrimitive("Qstore"),
+                "name" to data["keyName"]!!,
+                "stype" to JsonPrimitive(stype.name),
+                "values" to values,
+                "units" to data["units"]!!,
             )
         )
     }
@@ -57,6 +67,7 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
 @OptIn(InternalSerializationApi::class)
 @Serializable(with = QstoreSerializer::class)
 @KeepGeneratedSerializer
+@SerialName("Qstore")
 data class Qstore(
     override val name: Key, val stype: StoredType,
     val values: Array<String>, val units: Units = Units.NoUnits
@@ -198,9 +209,9 @@ object SstoreSerializer : JsonTransformingSerializer<Sstore>(Sstore.generatedSer
     @OptIn(ExperimentalSerializationApi::class)
     override fun transformSerialize(element: JsonElement): JsonElement {
         require(element is JsonObject)
-        val stype = StoredType.valueOf(element.getValue("stype").jsonPrimitive.content)
+        val stype = valueOf(element.getValue("stype").jsonPrimitive.content)
         val values = when (stype) {
-            StoredType.STRING -> element.getValue("value").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
+            STRING -> element.getValue("value").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
             else -> throw IllegalArgumentException("Bummer")
         }
         return buildJsonObject {
@@ -214,14 +225,20 @@ object SstoreSerializer : JsonTransformingSerializer<Sstore>(Sstore.generatedSer
     }
 
     override fun transformDeserialize(element: JsonElement): JsonElement {
-        // XXX TODO
         require(element is JsonObject)
-        val keyName = element.jsonObject.keys.first()
-        val data = element.getValue(keyName).jsonObject
+        val keyType = element.jsonObject.keys.tail().first()
+        val stype = when (keyType) {
+            "StringKey" -> STRING
+            else -> throw IllegalArgumentException("Bummer")
+        }
+        val data = element.getValue(keyType).jsonObject
+        val values = JsonArray(data["values"]!!.jsonArray.map {JsonPrimitive(it.jsonPrimitive.content) })
         return JsonObject(
             mapOf(
-                "keyName" to JsonPrimitive(keyName),
-                "data" to data
+                "type" to JsonPrimitive("Sstore"),
+                "name" to data["keyName"]!!,
+                "stype" to JsonPrimitive(stype.name),
+                "value" to values
             )
         )
     }
@@ -231,6 +248,7 @@ object SstoreSerializer : JsonTransformingSerializer<Sstore>(Sstore.generatedSer
 @OptIn(InternalSerializationApi::class)
 @Serializable(with = SstoreSerializer::class)
 @KeepGeneratedSerializer
+@SerialName("Sstore")
 data class Sstore(override val name: Key, val stype: StoredType, val value: Array<String>) : HasKey {
 
     override fun equals(other: Any?): Boolean {

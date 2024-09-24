@@ -4,6 +4,7 @@ import arrow.core.Some
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem
+import csw.params.core.models.TYPLevel
 import csw.params.keys.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
@@ -20,8 +21,9 @@ class CommandsTest: DescribeSpec({
 
     val parmFormat = Json {
         prettyPrint = true
+        ignoreUnknownKeys = true
 //        classDiscriminator = "_type"
-        classDiscriminatorMode = ClassDiscriminatorMode.NONE
+//        classDiscriminatorMode = ClassDiscriminatorMode.NONE
         encodeDefaults = true
     }
 
@@ -75,8 +77,11 @@ class CommandsTest: DescribeSpec({
             val sc1: Setup = Setup(prefix, "move", Some(obsId)).add(i1).add(i2)
 
             // Test Setup JSON I/O
-            val s = parmFormat.encodeToString(sc1)
-            println("XXX-----------\n $s\n-----------------------")
+            val sc1Json = parmFormat.encodeToString(sc1)
+            println("XXX sc1 json-----------\n $sc1Json\n-----------------------")
+            val sc1Decoded = parmFormat.decodeFromString<Setup>(sc1Json)
+            println("XXX sc1 decoded-----------\n $sc1Decoded\n-----------------------")
+            sc1Decoded shouldBe sc1
 
             //access keys
             val k1Exists: Boolean = sc1.exists(k1) //true
