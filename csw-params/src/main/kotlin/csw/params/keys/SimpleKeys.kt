@@ -33,7 +33,7 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
                 putJsonArray("values") {
                     addAll(values)
                 }
-                if (element.keys.contains("units"))
+                if ("units" in element.keys)
                     put("units", element.getValue("units"))
             }
         }
@@ -44,10 +44,13 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
         // skip "type" key
         val keyType = element.jsonObject.keys.tail().first()
         val stype = when (keyType) {
-            "LongKey" -> INTEGER
-            "DoubleKey" -> NUMBER
-            "StringKey" -> STRING
-            "BooleanKey" -> BOOLEAN
+            "DoubleKey" -> StoredType.NUMBER
+            "FloatKey" -> StoredType.NUMBER
+            "IntKey" -> StoredType.INTEGER
+            "LongKey" -> StoredType.INTEGER
+            "ShortKey" -> StoredType.INTEGER
+            "StringKey" -> StoredType.STRING
+            "BooleanKey" -> StoredType.BOOLEAN
             else -> throw IllegalArgumentException("Bummer")
         }
         val data = element.getValue(keyType).jsonObject
