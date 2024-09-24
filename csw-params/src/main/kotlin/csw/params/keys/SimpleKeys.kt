@@ -1,70 +1,14 @@
 package csw.params.keys
 
 import arrow.core.*
-import csw.params.codecs.Data2
-import csw.params.codecs.IntegerCore
-import csw.params.codecs.NumberCore
-import csw.params.codecs.TestSerializer
 import csw.params.commands.HasParms
 import csw.params.keys.KeyHelpers.toDoubleArray
 import csw.params.keys.StoredType.*
 import kotlinx.serialization.*
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.*
 
 
 enum class StoredType { NUMBER, INTEGER, BOOLEAN, STRING }
-
-//object QstoreSerializer: KSerializer<Qstore> {
-//    val sss1: KSerializer<Map<String, NumberCore>> = MapSerializer(String.serializer(), NumberCore.serializer())
-//    val sss2: KSerializer<Map<String, IntegerCore>> = MapSerializer(String.serializer(), IntegerCore.serializer())
-//
-//    override val descriptor = sss2.descriptor
-//
-//    override fun serialize(encoder: Encoder, value: Qstore) {
-//        val keyType: String = when (value.stype) {
-//            StoredType.NUMBER -> "DoubleKey"
-//            StoredType.INTEGER -> "LongKey"
-//            StoredType.STRING -> "StringKey"
-//            StoredType.BOOLEAN -> "BooleanKey"
-//        }
-//        when (value.stype) {
-//            StoredType.NUMBER -> {
-//                encoder.encodeSerializableValue(sss1, hashMapOf(keyType to NumberCore(value.name, value.asDoubles, value.units)))
-//            }
-//            StoredType.INTEGER -> {
-////                println("KeyType: $keyType")
-//                encoder.encodeSerializableValue(sss2, hashMapOf(keyType to IntegerCore(value.name, value.values.map { it.toLong()}.toLongArray(), value.units)))
-//            }
-//            else -> throw IllegalArgumentException("Bummer")
-//        }
-//    }
-//
-//    override fun deserialize(decoder: Decoder): Qstore {
-//        val spmap = decoder.decodeSerializableValue(sss1)
-//        val (keyType, param) = spmap.entries.first()
-//        val stored = when (keyType) {
-//            "DoubleKey" -> StoredType.NUMBER
-//            "FloatKey" -> StoredType.NUMBER
-//            "IntKey" -> StoredType.INTEGER
-//            "LongKey" -> StoredType.INTEGER
-//            "ShortKey" -> StoredType.INTEGER
-//            "StringKey" -> StoredType.STRING
-//            "BooleanKey" -> StoredType.BOOLEAN
-//            else -> throw IllegalArgumentException("Key type is not supported: $keyType")
-//        }
-//        val qs = when (stored) {
-//            StoredType.NUMBER -> Qstore(param.keyName, stored, param.values.map { it.toString() }.toTypedArray(), param.units)
-//            StoredType.INTEGER -> Qstore(param.keyName, stored, param.values.map { it.toLong().toString() }.toTypedArray(), param.units)
-//            else -> throw IllegalArgumentException("Key type is not supported: $stored")
-//        }
-//        return qs
-//    }
-//}
-
 
 object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSerializer()) {
     @OptIn(ExperimentalSerializationApi::class)
@@ -78,8 +22,10 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
             StoredType.BOOLEAN -> "BooleanKey"
         }
         val values = when (stype) {
-            StoredType.NUMBER -> element.getValue("values").jsonArray.map { it.jsonPrimitive.content.toDouble() }
-            StoredType.INTEGER -> element.getValue("values").jsonArray.map { it.jsonPrimitive.content.toInt() }
+            StoredType.NUMBER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toDouble()) }
+            StoredType.INTEGER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toInt()) }
+            StoredType.STRING -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
+            StoredType.BOOLEAN -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toBoolean()) }
             else -> throw IllegalArgumentException("Bummer")
         }
         return buildJsonObject {
@@ -247,8 +193,53 @@ data class IntegerKey(override val name: Key, val units: Units = Units.NoUnits) 
     }
 }
 
+
+object SstoreSerializer : JsonTransformingSerializer<Sstore>(Sstore.generatedSerializer()) {
+    @OptIn(ExperimentalSerializationApi::class)
+    override fun transformSerialize(element: JsonElement): JsonElement {
+        require(element is JsonObject)
+        val stype = StoredType.valueOf(element.getValue("stype").jsonPrimitive.content)
+        val keyType: String = when (stype) {
+            StoredType.NUMBER -> "DoubleKey"
+            StoredType.INTEGER -> "LongKey"
+            StoredType.STRING -> "StringKey"
+            StoredType.BOOLEAN -> "BooleanKey"
+        }
+        val values = when (stype) {
+            StoredType.NUMBER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toDouble()) }
+            StoredType.INTEGER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toInt()) }
+            StoredType.STRING -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
+            StoredType.BOOLEAN -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toBoolean()) }
+            else -> throw IllegalArgumentException("Bummer")
+        }
+        return buildJsonObject {
+            putJsonObject(keyType) {
+                put("keyName", element.getValue("name").jsonPrimitive.content)
+                putJsonArray("values") {
+                    addAll(values)
+                }
+            }
+        }
+    }
+
+    override fun transformDeserialize(element: JsonElement): JsonElement {
+        // XXX TODO
+        require(element is JsonObject)
+        val keyName = element.jsonObject.keys.first()
+        val data = element.getValue(keyName).jsonObject
+        return JsonObject(
+            mapOf(
+                "keyName" to JsonPrimitive(keyName),
+                "data" to data
+            )
+        )
+    }
+}
+
 /* SStore has no units */
-@Serializable
+@OptIn(InternalSerializationApi::class)
+@Serializable(with = SstoreSerializer::class)
+@KeepGeneratedSerializer
 data class Sstore(override val name: Key, val stype: StoredType, val value: Array<String>) : HasKey {
 
     override fun equals(other: Any?): Boolean {
