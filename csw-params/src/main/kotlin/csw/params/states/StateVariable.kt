@@ -65,8 +65,7 @@ sealed interface StateVariable {
         override var paramSet: List<HasKey> = emptyList()
     ) : HasParms,
         StateVariable {
-        
-
+        override val _type: String = javaClass.simpleName
 
         /**
          * A Java helper method to create a DemandState from a Setup
@@ -110,7 +109,7 @@ sealed interface StateVariable {
         override val prefix: Prefix, override val stateName: StateName,
         override var paramSet: List<HasKey> = emptyList()
     ) : HasParms, StateVariable {
-        
+        override val _type: String = javaClass.simpleName
 
         fun add(item1: HasKey, vararg items: HasKey): CurrentState =
             copy(paramSet = padd(this.paramSet, listOf(item1) + items.toList()))

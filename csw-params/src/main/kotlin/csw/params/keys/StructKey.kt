@@ -6,7 +6,8 @@ import arrow.core.Some
 import csw.params.commands.HasParms
 
 data class Struct(override val name: Key, override var paramSet: List<HasKey>): HasParms, HasKey {
-    
+
+    override val _type: String = javaClass.simpleName
 
     companion object {
         internal fun getStored(name: Key, target: HasParms): Option<Struct> {

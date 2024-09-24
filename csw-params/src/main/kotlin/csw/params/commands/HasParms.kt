@@ -11,6 +11,8 @@ import kotlinx.serialization.Serializable
 typealias ParmsList = List<HasKey>
 
 interface HasParms {
+    // Needed for serialization
+    val _type: String
 
     // Note: This needs to be called paramSet to match the CSW JSON format, or else a JSON transformer needs to rename it
     var paramSet: ParmsList

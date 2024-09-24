@@ -58,7 +58,8 @@ data class Setup(
     override val maybeObsId: Option<ObsId>,
     override var paramSet: List<HasKey> = emptyList(),
 ) : HasParms, ControlCommand {
-    
+    override val _type: String = javaClass.simpleName
+
 
     override fun toString(): String = "Setup(source=$source, cmdName=$commandName, obsId=$maybeObsId, ${paramSet})"
 
@@ -96,7 +97,7 @@ data class Observe(
     override val maybeObsId: Option<ObsId>,
     override var paramSet: List<HasKey> = emptyList()
 ) : HasParms, ControlCommand {
-    
+    override val _type: String = javaClass.simpleName
 
     override fun toString(): String = "Observe(source=$source, cmdName=$commandName, obsId=$maybeObsId, ${paramSet})"
 
@@ -133,7 +134,7 @@ data class Wait(
     override val maybeObsId: Option<ObsId>,
     override var paramSet: List<HasKey> = emptyList()
 ) : HasParms, SequenceCommand {
-    
+    override val _type: String = javaClass.simpleName
 
     override fun toString(): String = "Observe(source=$source, cmdName=$commandName, obsId=$maybeObsId, ${paramSet})"
 

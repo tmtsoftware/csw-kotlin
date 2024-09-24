@@ -7,7 +7,8 @@ import csw.params.keys.HasKey
  * A result containing parameters for command response
  */
 data class Result (override var paramSet: List<HasKey> = emptyList()): HasParms {
-    
+
+    override val _type: String = javaClass.simpleName
 
     fun nonEmpty(): Boolean = paramSet.isNotEmpty()
 

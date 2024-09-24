@@ -77,34 +77,20 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
             StoredType.STRING -> "StringKey"
             StoredType.BOOLEAN -> "BooleanKey"
         }
-        return when (stype) {
-            StoredType.NUMBER -> {
-                val values = element.getValue("values").jsonArray.map { it.jsonPrimitive.content.toDouble() }
-                buildJsonObject {
-                    putJsonObject(keyType) {
-                        put("keyName", element.getValue("name").jsonPrimitive.content)
-                        putJsonArray("values") {
-                            addAll(values)
-                        }
-                        if (element.keys.contains("units"))
-                            put("units", element.getValue("units").jsonObject.getValue("uname"))
-                    }
-                }
-            }
-            StoredType.INTEGER -> {
-                val values = element.getValue("values").jsonArray.map { it.jsonPrimitive.content.toInt() }
-                buildJsonObject {
-                    putJsonObject(keyType) {
-                        put("keyName", element.getValue("name").jsonPrimitive.content)
-                        putJsonArray("values") {
-                            addAll(values)
-                        }
-                        if (element.keys.contains("units"))
-                            put("units", element.getValue("units").jsonObject.getValue("uname"))
-                    }
-                }
-            }
+        val values = when (stype) {
+            StoredType.NUMBER -> element.getValue("values").jsonArray.map { it.jsonPrimitive.content.toDouble() }
+            StoredType.INTEGER -> element.getValue("values").jsonArray.map { it.jsonPrimitive.content.toInt() }
             else -> throw IllegalArgumentException("Bummer")
+        }
+        return buildJsonObject {
+            putJsonObject(keyType) {
+                put("keyName", element.getValue("name").jsonPrimitive.content)
+                putJsonArray("values") {
+                    addAll(values)
+                }
+                if (element.keys.contains("units"))
+                    put("units", element.getValue("units"))
+            }
         }
     }
 

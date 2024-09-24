@@ -22,6 +22,7 @@ class CommandsTest: DescribeSpec({
         prettyPrint = true
 //        classDiscriminator = "_type"
         classDiscriminatorMode = ClassDiscriminatorMode.NONE
+        encodeDefaults = true
     }
 
     //#obsid

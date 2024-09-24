@@ -20,7 +20,7 @@ data class ObserveEvent private constructor(
     override val eventTime: UTCTime,
     override var paramSet: ParmsList = emptyList()
 ): HasParms, Event {
-    
+    override val _type: String = javaClass.simpleName
 
     /**
      * Create a new ObserveEvent instance when a parameter is added or removed

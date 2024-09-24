@@ -15,7 +15,7 @@ data class SystemEvent (
     override val eventTime: UTCTime,
     override var paramSet: ParmsList = emptyList()
 ): HasParms, Event {
-    
+    override val _type: String = javaClass.simpleName
 
     /**
      * A common toString method for all concrete implementation
