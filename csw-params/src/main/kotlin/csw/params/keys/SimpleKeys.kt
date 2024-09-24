@@ -26,7 +26,6 @@ object QstoreSerializer : JsonTransformingSerializer<Qstore>(Qstore.generatedSer
             INTEGER -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toInt()) }
             STRING -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content) }
             BOOLEAN -> element.getValue("values").jsonArray.map { JsonPrimitive(it.jsonPrimitive.content.toBoolean()) }
-            else -> throw IllegalArgumentException("Bummer")
         }
         return buildJsonObject {
             putJsonObject(keyType) {
