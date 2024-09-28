@@ -9,13 +9,13 @@ object KeyHelpers {
     private const val DELIM: String = ","
     private const val AR_DELIM: String = ":"
 
-    internal fun <T> aencode(s: Array<T>): Array<String> = s.map { it.toString() }.toTypedArray()  //  s.joinToString(DELIM)
+    internal fun <T> aencode(s: Array<T>): Array<String> = s.map { it.toString() }.toTypedArray()
 
-    internal fun <T> lencode(s: List<T>): Array<String> = s.map { it.toString() }.toTypedArray() //s.joinToString(",")
+    //internal fun <T> lencode(s: List<T>): Array<String> = s.map { it.toString() }.toTypedArray()
 
-    internal fun sencode(s: Number): Array<String> = aencode(arrayOf(s))
+    //internal fun sencode(s: Number): Array<String> = aencode(arrayOf(s))
 
-    internal fun decodeValue(s: Array<String>): DoubleArray = s.map{ it.toDouble() }.toDoubleArray()
+    //internal fun decodeValue(s: Array<String>): DoubleArray = s.map{ it.toDouble() }.toDoubleArray()
 
     internal fun Array<String>.toDoubleArray() = this.map { it.toDouble() }.toDoubleArray()
 

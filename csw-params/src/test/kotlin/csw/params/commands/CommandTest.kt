@@ -126,13 +126,20 @@ class CommandTests: FunSpec( {
 
 
     test("Should serialize and deserialize Setup") {
+        val parmFormat = Json {
+            prettyPrint = true
+            ignoreUnknownKeys = true
+//        classDiscriminator = "_type"
+            //encodeDefaults = true
+        }
+
         var s = testS()
 
         s = s.add(key1.set(100, 200), key2.set(1000.0, -1000.0))
 
-        val json = Json.encodeToString(s)
+        val json = parmFormat.encodeToString(s)
         println("json: $json")
-        val objIn = Json.decodeFromString<Setup>(json)
+        val objIn = parmFormat.decodeFromString<Setup>(json)
         println("objIn: $objIn")
         objIn shouldBe s
     }
@@ -149,6 +156,7 @@ class CommandTests: FunSpec( {
         s = s.add(key1.set(100, 200), key2.set(1000.0, -1000.0))
 
         val bytes = Cbor.encodeToByteArray(s)
+        println("bytes: $bytes")
         println(bytes.toAsciiHexString())
         val obj = Cbor.decodeFromByteArray<Setup>(bytes)
         println(obj)

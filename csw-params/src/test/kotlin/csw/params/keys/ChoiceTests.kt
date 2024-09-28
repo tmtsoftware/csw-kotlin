@@ -17,30 +17,32 @@ class ChoiceTests : FunSpec({
     fun testS(p: Prefix = testP, cname: CommandName = "test"):Setup =  Setup(p, cname, None)
 
     test("Basic ChioceKey tests") {
-        val c1 = ChoiceSet("A", "B", "C")
-        val c2 = ChoiceSet("AA", "BB", "CC")
+        val c1 = Choices("A", "B", "C")
+        val c2 = Choices("AA", "BB", "CC")
         val key1 = ChoiceKey("key1", c1)
         val key2 = ChoiceKey("key2", c2)
 
-        var st1 = ChoiceStore(key1.name, "B", "A,B,C")
+        var st1 = ChoiceStore(key1.name, arrayOf("B"), Units.NoUnits)
 
         var s = testS()
         s = s.add(key1.set("B", "C"))
         s.size shouldBe 1
 
         val r1 = key1.get(s)
-        r1.onSome { it shouldBe "C,B" }
+        r1.onSome { it shouldBe Choices("B", "C") }
+
+        key1.choice(s) shouldBe "B"
+        key1.choices(s) shouldBe Choices("B", "C")
 
         shouldThrow<IllegalArgumentException> {
             // Bad Choice
             key1.set("BAD")
         }
-
     }
 
     test("Add multiples test") {
-        val c1 = ChoiceSet("A", "B", "C")
-        val c2 = ChoiceSet("AA", "BB", "CC")
+        val c1 = Choices("A", "B", "C")
+        val c2 = Choices("AA", "BB", "CC")
         val key1 = ChoiceKey("key1", c1)
         val key2 = ChoiceKey("key2", c2)
 
@@ -49,14 +51,14 @@ class ChoiceTests : FunSpec({
         s.size shouldBe 2
 
         val r1 = key1.get(s)
-        r1.onSome { it shouldBe "C,B" }
+        r1.onSome { it shouldBe Choices("B","C") }
 
         val r2 = key2.get(s)
-        r2.onSome { it shouldBe "CC" }
+        r2.onSome { it shouldBe Choices("CC") }
     }
 
     test("Reject choice not in choiceset") {
-        val c1 = ChoiceSet("A", "B", "C")
+        val c1 = Choices("A", "B", "C")
         val key1 = ChoiceKey("key1", c1)
 
         var s = testS()
@@ -70,8 +72,8 @@ class ChoiceTests : FunSpec({
     }
 
     test("Test serialization") {
-        val c1 = ChoiceSet("A", "B", "C", "D", "E", "F")
-        val c2 = ChoiceSet("AA", "BB", "CC")
+        val c1 = Choices("A", "B", "C", "D", "E", "F")
+        val c2 = Choices("AA", "BB", "CC")
         val key1 = ChoiceKey("key1", c1)
         val key2 = ChoiceKey("key2", c2)
 

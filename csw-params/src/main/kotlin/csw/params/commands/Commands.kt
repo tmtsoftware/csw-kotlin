@@ -1,19 +1,20 @@
 @file:UseSerializers(
-    OptionSerializer::class
+    OptionSerializer::class,
 )
 
 package csw.params.commands
 
-import arrow.core.None
 import arrow.core.Option
 import arrow.core.serialization.OptionSerializer
+import csw.params.codecs.TopParamSerializer
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.params.keys.HasKey
 import csw.params.keys.IsKey
-import csw.params.keys.TestKeys.Qstore
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
+import kotlinx.serialization.builtins.ListSerializer
 
 typealias CommandName = String
 //value class CommandName(val name: String)
@@ -56,9 +57,12 @@ sealed interface ControlCommand: SequenceCommand
 data class Setup(
     override val source: Prefix,
     override val commandName: CommandName,
+    @SerialName("maybeObsId")
     override val obsId: Option<ObsId>,
-    override var parms: List<HasKey> = emptyList()
+    @SerialName("paramSet")
+    override var parms: List<@Serializable(TopParamSerializer::class)HasKey> = emptyList()
 ) : HasParms, ControlCommand {
+    val _type: String = javaClass.simpleName
 
     override fun toString(): String = "Setup(source=$source, cmdName=$commandName, obsId=$obsId, ${parms})"
 

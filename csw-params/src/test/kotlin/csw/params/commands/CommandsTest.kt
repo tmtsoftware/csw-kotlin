@@ -70,7 +70,7 @@ class CommandsTest: DescribeSpec({
                 k2bad(sc1) //failure
             }
 
-            //add more than one parameters, using madd
+            //add more than one parameter, using madd
             val sc2: Setup = sc1.madd(k3.set(1, 2, 3, 4), k4.set(1.0f, 2.0f))
             val paramSize: Int = sc2.size
 

@@ -32,7 +32,7 @@ data class Command1(val keyName: String, val voltageIn: Double, val sel: Selecti
     override val commandName:CommandName = "testCommand"
 
     val key1 = NumberKey("voltage", Units.volt)
-    val key2 = ChoiceKey("option", ChoiceSet("A", "B", "C"))
+    val key2 = ChoiceKey("option", Choices("A", "B", "C"))
 
     override fun toStore(): Setup {
         var x = Setup(sender, commandName, obsId)

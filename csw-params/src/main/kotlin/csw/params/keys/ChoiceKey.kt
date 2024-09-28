@@ -10,15 +10,14 @@ import kotlinx.serialization.Serializable
 
 typealias Choice = String
 
-
-data class ChoiceSet(val values: Set<Choice>) {
+data class Choices(val values: Set<Choice>) {
     /**
      * Creates Choices from provided String values
      *
      * @param choices one or more choices in string format
      * @return an instance of Choices
      */
-    constructor(vararg choices: String): this(choices.toSet())
+    constructor(vararg choices: Choice): this(choices.toSet())
 
     companion object {
         /**
@@ -27,51 +26,51 @@ data class ChoiceSet(val values: Set<Choice>) {
          * @param choices one or more choices
          * @return an instance of Choices
          */
-        fun fromChoices(vararg choices: Choice): ChoiceSet = ChoiceSet(choices.toSet())
+        fun fromChoices(vararg choices: Choice): Choices = Choices(choices.toSet())
     }
 }
 
 @Serializable
-data class ChoiceStore(override val name: Key, val choice: String, val choices: String): HasKey {
+data class ChoiceStore(override val name: Key, val choice: Array<String>, val units: Units): HasKey {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
         other as ChoiceStore
         if (name != other.name) return false
-        if (choice != other.choice) return false
-        if (choices != other.choices) return false
+        if (!choice.contentDeepEquals(other.choice)) return false
         return true
     }
     override fun hashCode(): Int {
         var result = name.hashCode()
         result = 31 * result + choice.hashCode()
-        result = 31 * result + choices.hashCode()
         return result
     }
 }
 
 
-data class ChoiceKey(override val name: String, val choices: ChoiceSet): IsKey {
+data class ChoiceKey(override val name: String, val choices: Choices, val units: Units = Units.NoUnits): IsKey {
 
     fun set(value: Choice, vararg values: Choice): ChoiceStore {
-        val all = ChoiceSet(values.toSet() + value)
+        val all = Choices((arrayOf(value) + values).toSet())
         validate(all)
-        return ChoiceStore(name, cencode(all), cencode(choices))
+        return ChoiceStore(name, KeyHelpers.aencode(all.values.toTypedArray()), units)
     }
 
-    fun get(target: HasParms): Option<Choice> {
+    fun get(target: HasParms): Option<Choices> {
         val s: HasKey? = target.nget(name)
-        return if (s is ChoiceStore) Some(s.choice) else None
+        return if (s is ChoiceStore) Some(Choices.fromChoices(*s.choice)) else None
     }
 
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
-    operator fun invoke(target: HasParms): Choice = get(target).getOrElse { throw NoSuchElementException("The key is missing from the command.") }
-    fun value(target: HasParms): Choice = invoke(target)
-    fun head(target: HasParms): Choice = value(target)
+    operator fun invoke(target: HasParms): Choices = get(target).getOrElse { throw NoSuchElementException("The key is missing from the command.") }
+    fun value(target: HasParms): Choices = invoke(target)
+    fun choices(target: HasParms): Choices = invoke(target)
 
-    private fun cencode(cs: ChoiceSet): String = cs.values.joinToString(",") { it }
-    private fun validate(possibles: ChoiceSet) {
+    fun head(target: HasParms): Choice = value(target).values.first()
+    fun choice(target: HasParms): Choice = head(target)
+
+    private fun validate(possibles: Choices) {
         possibles.values.forEach {
             if (!choices.values.contains(it))
                 throw IllegalArgumentException("Choice \"$it\" not within the key's choice set: ${choices.values}.")
@@ -80,8 +79,7 @@ data class ChoiceKey(override val name: String, val choices: ChoiceSet): IsKey {
 
     // For compatibility
     companion object {
-        fun make(name: Key, values: ChoiceSet): ChoiceKey = ChoiceKey(name, values)
+        fun make(name: Key, values: Choices, units: Units = Units.NoUnits): ChoiceKey = ChoiceKey(name, values, units)
     }
-
 }
 

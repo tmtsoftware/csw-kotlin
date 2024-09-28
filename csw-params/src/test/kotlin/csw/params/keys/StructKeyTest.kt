@@ -15,7 +15,7 @@ class StructKeyTest: FunSpec( {
     val sk1 = IntegerKey("sk1")
     val sk2 = IntegerKey("sk2", Units.degC)
     val sk3 = NumberKey("sk3")
-    val sk4 = ChoiceKey("sk4", ChoiceSet("A", "B", "C"))
+    val sk4 = ChoiceKey("sk4", Choices("A", "B", "C"))
 
     test("Basic create ideas") {
 

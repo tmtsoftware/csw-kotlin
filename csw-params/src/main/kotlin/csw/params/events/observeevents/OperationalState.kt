@@ -1,6 +1,6 @@
 package csw.params.events.observeevents
 
-import csw.params.keys.ChoiceSet
+import csw.params.keys.Choices
 import kotlinx.serialization.Serializable
 
 /**
@@ -19,7 +19,7 @@ enum class OperationalState {
     BUSY;
 
     companion object {
-        fun toChoices(): ChoiceSet = ChoiceSet(OperationalState.entries.map { it.name }.toSet())
+        fun toChoices(): Choices = Choices(OperationalState.entries.map { it.name }.toSet())
     }
 }
 

@@ -1,20 +1,22 @@
 package csw.params.codecs
 
-import csw.params.keys.IntegerKey
-import csw.params.keys.Units
-import csw.params.keys.NumberKey
-import csw.params.keys.Qstore
+import csw.params.keys.*
 import io.kotest.assertions.json.shouldEqualJson
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.ClassDiscriminatorMode
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 
-class ParmCodecsTest: FunSpec( {
+class ParmCodecsTest : FunSpec({
     val parmFormat = Json {
         prettyPrint = true
-        //classDiscriminatorMode = ClassDiscriminatorMode.NONE
+        isLenient = true
     }
 
     test("NumberKey CSW Serialization") {
@@ -23,7 +25,7 @@ class ParmCodecsTest: FunSpec( {
         val key1 = NumberKey("key1name", Units.meter)
         val st1 = key1.set(1.23, 4.56, 7.89)
 
-        val jsonOut =  parmFormat.encodeToString(QstoreSerializer, st1)
+        val jsonOut = parmFormat.encodeToString(NumberSerializer, st1)
         val expected = """
             {
             "DoubleKey" : {
@@ -35,7 +37,7 @@ class ParmCodecsTest: FunSpec( {
         """.trimIndent()
         jsonOut shouldEqualJson expected
 
-        val objIn = parmFormat.decodeFromString(QstoreSerializer, jsonOut)
+        val objIn = parmFormat.decodeFromString(NumberSerializer, jsonOut)
         objIn shouldBe st1
     }
 
@@ -45,7 +47,7 @@ class ParmCodecsTest: FunSpec( {
         val key1 = NumberKey("key1name", Units.meter)
         val st1 = key1.set(1.23f, 4.56f, 7.89f)
 
-        val jsonOut =  parmFormat.encodeToString(QstoreSerializer, st1)
+        val jsonOut = parmFormat.encodeToString(NumberSerializer, st1)
         val expected = """
             {
             "DoubleKey" : {
@@ -56,19 +58,42 @@ class ParmCodecsTest: FunSpec( {
           }
         """.trimIndent()
         jsonOut shouldEqualJson expected
-        println("jsonOut: $jsonOut")
 
-        val objIn = parmFormat.decodeFromString(QstoreSerializer, jsonOut)
+        val objIn = parmFormat.decodeFromString(NumberSerializer, jsonOut)
         objIn shouldBe st1
+    }
+
+    test("NumberKey Float CSW Serialization TEST TEST") {
+
+        // Float Test
+        val key1 = NumberKey("key1name", Units.meter)
+        val st1 = key1.set(1.23f, 4.56f, 7.89f)
+
+        val jsonOut = parmFormat.encodeToString(ParamDeserializer2, st1)
+        val expected = """
+            {
+            "DoubleKey" : {
+              "keyName" : "key1name",
+              "values" : [ 1.23, 4.56, 7.89 ],
+              "units" : "meter"
+            }
+          }
+        """.trimIndent()
+        //jsonOut shouldEqualJson expected
+        // println("jsonOut: $jsonOut")
+
+        val objIn = parmFormat.decodeFromString(ParamDeserializer2, jsonOut)
+        println("objIn: $objIn")
+        //objIn shouldBe st1
     }
 
     test("IntegerKey Int CSW Serialization") {
 
-        // Float Test
+        // Integer Test
         val key1 = IntegerKey("key1name", Units.meter)
         val st1 = key1.set(1, 4, 7)
 
-        val jsonOut =  parmFormat.encodeToString(QstoreSerializer, st1)
+        val jsonOut = parmFormat.encodeToString(IntegerSerializer, st1)
         val expected = """
             {
             "LongKey" : {
@@ -80,126 +105,224 @@ class ParmCodecsTest: FunSpec( {
         """.trimIndent()
         jsonOut shouldEqualJson expected
 
-        val objIn = parmFormat.decodeFromString(QstoreSerializer, jsonOut)
+        val objIn = parmFormat.decodeFromString(IntegerSerializer, jsonOut)
         objIn shouldBe st1
     }
 
-    fun <K,V> Pair<K,V>.toEntry() = object: Map.Entry<K,V> {
-        override val key: K = first
-        override val value: V = second
+    test("IntegerKey Int CSW Serialization with TopLevel") {
+        // Integer Test
+        val key1 = IntegerKey("key1name", Units.meter)
+        val st1 = key1.set(1, 4, 7)
+
+        val expected = """
+            {
+            "LongKey" : {
+              "keyName" : "key1name",
+              "values" : [ 1, 4, 7 ],
+              "units" : "meter"
+            }
+          }
+        """.trimIndent()
+        val jout = parmFormat.encodeToString(TopParamSerializer, st1)
+        jout shouldEqualJson expected
+
+        val objIn = parmFormat.decodeFromString(TopParamSerializer, jout)
+        objIn shouldBe st1
     }
 
-    fun getEntry(key: String, value: CSWValues): Map.Entry<String, CSWValues> =
-        object: Map.Entry<String, CSWValues> {
-            override val key: String = key
-            override val value: CSWValues = value
+    test("StringKey CSW TopLevelSerializer") {
+
+        // String Test
+        val key1 = StringKey("key1name")
+        val st1 = key1.set("A", "B", "C")
+
+        val jout = parmFormat.encodeToString(TopParamSerializer, st1)
+        val expected = """
+            {
+            "StringKey" : {
+              "keyName" : "key1name",
+              "values" : [ "A", "B", "C" ],
+              "units" : "NoUnits"
+            }
+          }
+        """.trimIndent()
+        jout shouldEqualJson expected
+
+        val objIn = parmFormat.decodeFromString(TopParamSerializer, jout)
+        objIn shouldBe st1
+    }
+
+    test("BooleanKey CSW TopLevelSerializer") {
+        // Boolean Test
+        val key1 = BooleanKey("key1name")
+        val st1 = key1.set(true, true, false)
+
+        val jout = parmFormat.encodeToString(TopParamSerializer, st1)
+        val expected = """
+            {
+            "BooleanKey" : {
+              "keyName" : "key1name",
+              "values" : [ true, true, false ],
+              "units" : "NoUnits"
+            }
+          }
+        """.trimIndent()
+        jout shouldEqualJson expected
+
+        val objIn = parmFormat.decodeFromString(TopParamSerializer, jout)
+        objIn shouldBe st1
+    }
+
+    test("ChoiceKey CSW TopLevelSerializer") {
+        // Boolean Test
+        val key1 = ChoiceKey("key1name", Choices("A", "B", "C"))
+        val st1 = key1.set("A", "B")
+
+        val jout = parmFormat.encodeToString(TopParamSerializer, st1)
+        val expected = """
+            {
+            "ChoiceKey" : {
+              "keyName" : "key1name",
+              "values" : [ "A", "B" ],
+              "units" : "NoUnits"
+            }
+          }
+        """.trimIndent()
+        jout shouldEqualJson expected
+
+        val objIn = parmFormat.decodeFromString(TopParamSerializer, jout)
+        objIn shouldBe st1
+    }
+
+    test("All CSW Keys Test") {
+
+        val e1 = """{
+            "StringKey" : {
+              "keyName" : "StringKey",
+              "values" : [ "Str1", "Str2" ],
+              "units" : "NoUnits"
+            }
+          }""".trimIndent()
+        val in1 = parmFormat.decodeFromString(TopParamSerializer, e1)
+        in1 shouldBe Sstore("StringKey", StoredType.STRING, arrayOf("Str1", "Str2"))
+
+        val e2 = """{
+            "IntKey" : {
+              "keyName" : "IntKey",
+              "values" : [ 70, 80 ],
+              "units" : "NoUnits"
+            }
+          }""".trimIndent()
+        val in2 = parmFormat.decodeFromString(TopParamSerializer, e2)
+        in2 shouldBe Qstore("IntKey", StoredType.INTEGER, arrayOf("70", "80"), Units.NoUnits)
+
+        val e3 = """{
+            "FloatKey" : {
+              "keyName" : "FloatKey",
+              "values" : [ 90, 100 ],
+              "units" : "NoUnits"
+            }
+          }""".trimIndent()
+        val in3 = parmFormat.decodeFromString(TopParamSerializer, e3)
+        in3 shouldBe Qstore("FloatKey", StoredType.NUMBER, arrayOf("90.0", "100.0"), Units.NoUnits)
+
+        val e4 = """{
+            "CharKey" : {
+              "keyName" : "CharKey",
+              "values" : [ "A", "B" ],
+              "units" : "NoUnits"
+            }
+          }""".trimIndent()
+        val in4 = parmFormat.decodeFromString(TopParamSerializer, e4)
+        in4 shouldBe Sstore("CharKey", StoredType.STRING, arrayOf("A", "B"))
+
+        val e5 = """{
+            "LongKey" : {
+              "keyName" : "LongKey",
+              "values" : [ 50, 60 ],
+              "units" : "meter"
+            }
+          }""".trimIndent()
+        val in5 = parmFormat.decodeFromString(TopParamSerializer, e5)
+        in5 shouldBe Qstore("LongKey", StoredType.INTEGER, arrayOf("50", "60"), Units.meter)
+
+        val e6 = """{
+            "ChoiceKey" : {
+              "keyName" : "ChoiceKey",
+              "values" : [ "First", "Second" ],
+              "units" : "NoUnits"
+            }
+          }""".trimIndent()
+        val in6 = parmFormat.decodeFromString(TopParamSerializer, e6)
+        in6 shouldBe ChoiceStore("ChoiceKey", arrayOf("First", "Second"), Units.NoUnits)
+    }
+
+    test("Param tester from Kotlin slack") {
+        val e5 = """{
+            "LongKey" : {
+              "keyName" : "LongKey",
+              "values" : [ 50, 60 ],
+              "units" : "meter"
+            }
+          }""".trimIndent()
+        val in5 = parmFormat.decodeFromString(Param.Serializer, e5)
+        println("in5: $in5")
+
+        val e2 = """
+            {
+            "DoubleKey" : {
+              "keyName" : "key1name",
+              "values" : [ 1.23, 4.56, 7.89 ],
+              "units" : "meter"
+            }
+          }
+        """.trimIndent()
+        val in2 = parmFormat.decodeFromString(Param.Serializer, e2)
+        println("in2: $in2")
+    }
+})
+
+@Serializable
+@SerialName("Param")
+private data class ParamSurrogate(
+    @SerialName("DoubleKey")
+    val double: Value<Double>? = null,
+    @SerialName("LongKey")
+    val long: Value<Long>? = null,
+    @SerialName("StringKey")
+    val string: Value<String>? = null,
+    @SerialName("BooleanKey")
+    val boolean: Value<Boolean>? = null,
+) {
+    @Serializable
+    class Value<T>(
+        val keyName: String,
+        val values: List<T>,
+        val units: Units,
+    )
+}
+
+@Serializable(with = Param.Serializer::class)
+data class Param(
+    val keyName: String,
+    val values: List<Any>,
+    val units: Units,
+) {
+    object Serializer : KSerializer<Param> {
+        override val descriptor: SerialDescriptor = ParamSurrogate.serializer().descriptor
+        override fun deserialize(decoder: Decoder): Param {
+            val surrogate = decoder.decodeSerializableValue(ParamSurrogate.serializer())
+            val value = surrogate.double
+                ?: surrogate.long
+                ?: surrogate.string
+                ?: surrogate.boolean
+                ?: throw SerializationException("Unknown type")
+            return Param(value.keyName, value.values, value.units)
         }
 
-    test("name WTF") {
-
-
-        val t1 = NCore("kimkey", doubleArrayOf(1.0, 2.0, 3.0), Units.ampere)
-        val t2 = ICore("kimkey", longArrayOf(1, 2, 3), Units.ampere)
-
-
-        //val d1 = Data(t1)
-
-        val x = getEntry("LongKey", t2)
-        val jsonOut = parmFormat.encodeToString(x)
-
-        println("Jsonout: $jsonOut")
-
-        val x2 = getEntry("DoubleKey", t1)
-        val jsonOut2 = parmFormat.encodeToString(x2)
-
-        println("JsonOut: $jsonOut2")
-
-        val obj2 = parmFormat.decodeFromString<CSWValues>(jsonOut2)
-        println("Objs2: $obj2")
+        override fun serialize(encoder: Encoder, value: Param) {
+            TODO("do the same but in reverse")
+        }
     }
+}
 
-
-    test("Deserialize is the challenge I guess") {
-
-
-        val t1 = NCore("kimkey", doubleArrayOf(1.0, 2.0, 3.0), Units.ampere)
-        val t2 = ICore("kimkey", longArrayOf(1, 2, 3), Units.ampere)
-
-        val t3 = Data2("LongKey", ICore("Kim1", longArrayOf(1, 2, 3), Units.ampere))
-        val jout1 = parmFormat.encodeToString(TestSerializer, t3)
-        println("JOut: $jout1")
-
-        val example = """
-            {
-            "LongKey" : {
-              "keyName" : "key1name",
-              "values" : [ 1, 4, 7 ],
-              "units" : "meter"
-            }
-          }
-        """.trimIndent()
-
-        println("Jsonout: $example")
-
-        val obj2:Data2 = parmFormat.decodeFromString(TestSerializer, example) as Data2
-        println("Objs2: $obj2")
-    }
-
-    test("PACKET serialization") {
-
-        val t1 = NCore("kimkey", doubleArrayOf(1.0, 2.0, 3.0), Units.ampere)
-        val t2 = ICore("kimkey", longArrayOf(1, 2, 3), Units.ampere)
-
-        val t3 = Packet("LongKey", ICore("Kim1", longArrayOf(1, 2, 3), Units.ampere))
-        println("T3: $t3")
-        val jout1 = parmFormat.encodeToString(PacketSerializer, t3)
-        println("JOut: $jout1")
-
-        val obj1 = parmFormat.decodeFromString(PacketSerializer, jout1)
-        println("Obj1: $obj1")
-
-    }
-
-
-
-
-    test("Deserialize is the challenge I with Packet") {
-
-
-        val t1 = NCore("kimkey", doubleArrayOf(1.0, 2.0, 3.0), Units.ampere)
-        val t2 = ICore("kimkey", longArrayOf(1, 2, 3), Units.ampere)
-
-        val p1 = Packet3("LongKey", ICore("kimkey", longArrayOf(1, 2, 3), Units.ampere))
-        val jout1 = parmFormat.encodeToString(TestSerializer3, p1)
-//        println("JOut1: $jout1")
-
-        val example = """
-            {
-            "LongKey" : {
-              "keyName" : "key1name",
-              "values" : [ 1, 4, 7 ],
-              "units" : "meter"
-            }
-          }
-        """.trimIndent()
-
-        //println("Jsonout: $example")
-        //jout1 shouldEqualJson example
-
-//        val obj1:Packet3 = parmFormat.decodeFromString(TestSerializer3, jout1)
-//        println("Obj1: $obj1")
-        //obj1 shouldBe p1
-
-        val p3 = Packet3("DoubleKey", t1)
-        val jout2 = parmFormat.encodeToString(TestSerializer3, p3)
-        println("JOut2: $jout2")
-
-        val obj2:Packet3 = parmFormat.decodeFromString(TestSerializer3, jout2)
-        println("Obj2: $obj2")
-        //obj2 shouldBe p2
-
-    }
-
-
-
-})
