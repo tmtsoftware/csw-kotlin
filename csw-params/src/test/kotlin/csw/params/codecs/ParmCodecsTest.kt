@@ -17,6 +17,7 @@ class ParmCodecsTest : FunSpec({
     val parmFormat = Json {
         prettyPrint = true
         isLenient = true
+        allowStructuredMapKeys = true
     }
 
     test("NumberKey CSW Serialization") {
@@ -279,6 +280,33 @@ class ParmCodecsTest : FunSpec({
         """.trimIndent()
         val in2 = parmFormat.decodeFromString(Param.Serializer, e2)
         println("in2: $in2")
+
+
+        val e3 = """{
+            "ChoiceKey" : {
+              "keyName" : "ChoiceKey",
+              "values" : [ "First", "Second" ],
+              "units" : "NoUnits"
+            }
+          }""".trimIndent()
+        val in3 = parmFormat.decodeFromString(Param.Serializer, e3)
+        println("in3: $in3")
+
+        val e4 = """{
+            "CoordKey": {
+                "keyName" : "CoordKey",
+                "values" : [{
+                    "_type" : "EqCoord",
+                    "tag" : "BASE",
+                    "ra" : 659912250000,
+                    "dec" : -109892300000,
+                    "frame" : "FK5",
+                    "catalogName" : "none"
+                } ]
+            }
+          }""".trimMargin()
+        val in4 = parmFormat.decodeFromString(Param.Serializer, e4)
+        println("in4: $in4")
     }
 })
 
@@ -293,12 +321,34 @@ private data class ParamSurrogate(
     val string: Value<String>? = null,
     @SerialName("BooleanKey")
     val boolean: Value<Boolean>? = null,
+    @SerialName("ChoiceKey")
+    val choice: Value<String>? = null,
+    @SerialName("CoordKey")
+    val coord: Value<CoordKind>? = null,
 ) {
     @Serializable
     class Value<T>(
         val keyName: String,
         val values: List<T>,
+        val units: Units = Units.NoUnits,
+    )
+    /*
+    @Serializable
+    class CoordValue(
+        val keyName: String,
+        val values: List<CoordKind>
         val units: Units,
+    )
+
+     */
+    @Serializable
+    data class CoordKind(
+        val _type: String,
+        val tag: String,
+        val ra: Long,
+        val dec: Long,
+        val frame: String,
+        val catalogName: String,
     )
 }
 
@@ -316,6 +366,8 @@ data class Param(
                 ?: surrogate.long
                 ?: surrogate.string
                 ?: surrogate.boolean
+                ?: surrogate.choice
+                ?: surrogate.coord
                 ?: throw SerializationException("Unknown type")
             return Param(value.keyName, value.values, value.units)
         }

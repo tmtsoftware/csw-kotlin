@@ -189,3 +189,33 @@ object TopParamSerializer: KSerializer<HasKey> {
 
     override fun deserialize(decoder: Decoder): HasKey = ParamDeserializer.deserialize(decoder)
 }
+
+@SerialName("Param2")
+@Serializable
+data class BSurrogate(
+    @SerialName("ChoiceKey")
+    val string: Value<String>? = null,
+) {
+    @Serializable
+    class Value<T>(
+        val keyName: String,
+        val values: List<T>,
+        val units: Units,
+    )
+}
+
+
+object ChoiceSerial2 : KSerializer<ChoiceStore> {
+    override val descriptor: SerialDescriptor = BSurrogate.serializer().descriptor
+    override fun deserialize(decoder: Decoder): ChoiceStore {
+        val surrogate = decoder.decodeSerializableValue(BSurrogate.serializer())
+        val value = surrogate.string
+            ?: throw SerializationException("Unknown type")
+        return ChoiceStore(value.keyName,value.values.toTypedArray(), value.units )
+    }
+
+    override fun serialize(encoder: Encoder, value: ChoiceStore) {
+        TODO ("Not yet done")
+    }
+
+}
