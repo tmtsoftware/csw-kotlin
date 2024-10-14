@@ -13,7 +13,7 @@ import io.kotest.matchers.shouldBe
 class CommandsTest: DescribeSpec({
 
     //#obsid
-    val obsId: ObsId = ObsId("2020A-001-123")
+    val obsId = ObsId("2020A-001-123")
     //#obsid
 
     describe("Examples of Prefix") {
@@ -21,16 +21,16 @@ class CommandsTest: DescribeSpec({
 
             //#prefix
             //using constructor, supplying subsystem and prefix both
-            val prefix1: Prefix = Prefix("nfiraos.ncc.trombone")
+            val prefix1 = Prefix("nfiraos.ncc.trombone")
 
             //just by supplying prefix
-            val prefix2: Prefix = Prefix("tcs.mobie.blue.filter")
+            val prefix2 = Prefix("tcs.mobie.blue.filter")
 
             //invalid prefix string which does not contain valid subsystem in the beginning will throw an exception,
             //val badPrefix: Prefix = Prefix("abcdefgh")
 
             //use implicit conversion to convert from String to Prefix
-            val prefix3: Prefix = Prefix("wfos.prog.cloudcover")
+            val prefix3 = Prefix("wfos.prog.cloudcover")
             //#prefix
 
             //validations

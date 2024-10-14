@@ -63,7 +63,6 @@ class StateVariablesTest: DescribeSpec({
             val ds4: DemandState = ds3.remove(utcTimeKey)
             ds4.size shouldBe 0
             utcTimeKey.isIn(ds4) shouldBe false
-            utcTimeKey.isNotIn(ds4) shouldBe true
 
             //update existing keys - set it back by an hour
             val ds5: DemandState =
@@ -121,7 +120,6 @@ class StateVariablesTest: DescribeSpec({
             val cs4 = cs3.remove(utcTimeKey)
             cs4.size shouldBe 0
             utcTimeKey.isIn(cs4) shouldBe false
-            utcTimeKey.isNotIn(cs4) shouldBe true
 
             //update existing keys - set it back by an hour
             val cs5 = cs3.add(utcTimeKey.set(UTCTime(UTCTime.now().value.minus(3600, DateTimeUnit.SECOND))))

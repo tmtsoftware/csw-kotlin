@@ -3,19 +3,40 @@ package csw.params.keys
 import arrow.core.None
 import arrow.core.Option
 import arrow.core.getOrElse
+import arrow.core.toOption
 import csw.params.commands.HasParms
 import csw.time.core.models.TAITime
 import csw.time.core.models.TMTTime
 import csw.time.core.models.UTCTime
 import kotlinx.datetime.Instant
+import kotlinx.datetime.toKotlinInstant
 import kotlinx.serialization.Serializable
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 enum class TimeType { UTC, TAI }
 
-@Serializable
-data class TimeStore(override val name: Key, val ttype: TimeType, val value: String) : HasKey {
-    val svalue: Array<String> get() = KeyHelpers.asStrings(value)
-    fun toStringAsTimes(): String = TimeHelpers.instantsFromStrings(svalue).joinToString(",")
+data class TimeStore(override val name: Key, val ttype: TimeType, val values: Array<String>) : HasKey {
+    val svalue: Array<String> get() = values
+    //fun toStringAsTimes(): String = TimeHelpers.instantsFromStrings(svalue).joinToString(",")
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+        other as TimeStore
+        if (name != other.name) return false
+        if (ttype != other.ttype) return false
+        if (!values.contentEquals(other.values)) return false
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = name.hashCode()
+        result = 31 * result + ttype.hashCode()
+        result = 31 * result + values.contentHashCode()
+        return result
+    }
 }
 
 data class TAITimeKey(override val name: Key) : IsKey {
@@ -23,18 +44,14 @@ data class TAITimeKey(override val name: Key) : IsKey {
     fun set(value: TAITime, vararg values: TAITime): TimeStore =
         TimeStore(name, TimeType.TAI, TimeHelpers.tencode((values.toList() + value).toTypedArray()))
 
+    fun contains(target: HasParms): Boolean = target.exists(this)
     fun isIn(target: HasParms): Boolean = target.exists(this)
-
-    fun isNotIn(target: HasParms): Boolean = !isIn(target)
 
     fun show(target: HasParms): String = value(target).joinToString(",", "[", "]")
 
     fun get(target: HasParms): Option<Array<TAITime>> {
-        val s: HasKey? = target.nget(name)
-        return if (s is TimeStore)
-            Option(TimeHelpers.instantsFromStrings(s.svalue).map { TAITime(it) }.toTypedArray())
-        else
-            None
+        val s = KeyHelpers.getStored<TimeStore>(this, target)
+        return s?.let { s -> TimeHelpers.instantsFromStrings(s.svalue).map { TAITime(it) }.toTypedArray() }.toOption()
     }
 
     operator fun invoke(target: HasParms): Array<TAITime> =
@@ -55,16 +72,12 @@ data class UTCTimeKey(override val name: Key) : IsKey {
     fun set(value: UTCTime, vararg values: UTCTime): TimeStore =
         TimeStore(name, TimeType.UTC, TimeHelpers.tencode((values.toList() + value).toTypedArray()))
 
+    fun contains(target: HasParms): Boolean = target.exists(this)
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
-    fun isNotIn(target: HasParms): Boolean = !isIn(target)
-
     fun get(target: HasParms): Option<Array<UTCTime>> {
-        val s: HasKey? = target.nget(name)
-        return if (s is TimeStore)
-            Option(TimeHelpers.instantsFromStrings(s.svalue).map { UTCTime(it) }.toTypedArray())
-        else
-            None
+        val s = KeyHelpers.getStored<TimeStore>(this, target)
+        return s?.let { s -> TimeHelpers.instantsFromStrings(s.svalue).map { UTCTime(it) }.toTypedArray() }.toOption()
     }
 
     fun show(target: HasParms): String = value(target).joinToString(",", "[", "]")
@@ -82,37 +95,11 @@ data class UTCTimeKey(override val name: Key) : IsKey {
 }
 
 private object TimeHelpers {
-    fun instantsFromStrings(values: Array<String>): List<Instant> {
-        require(values.size % 2 == 0) { "TimeStore should have a multiple of 2 elements" }
-        val times = mutableListOf<Instant>()
-        for (i in values.indices step 2) {
-            val t = Instant.fromEpochSeconds(values[i].toLong(), values[i + 1].toLong())
-            times.add(t)
-        }
-        return times
-    }
 
-    fun longsFromStrings(values: Array<String>): List<Long> {
-        require(values.size % 2 == 0) { "TimeStore should have a multiple of 2 elements" }
-        val times = mutableListOf<Long>()
-        for (i in values.indices step 2) {
-            times.add(values[i].toLong())
-            times.add(values[i + 1].toLong())
-        }
-        return times
-    }
+    fun toInstant(s: String): Instant = ZonedDateTime.parse(s).toInstant().toKotlinInstant()
 
-    fun tencode(t: Array<TMTTime>): String = toArray(t).joinToString(",")
+    fun instantsFromStrings(tin: Array<String>): Array<Instant> =
+        tin.map { toInstant(it) }.toTypedArray()
 
-    fun toArray(s: Array<TMTTime>): List<Long> {
-        var la = emptyList<Long>()
-        for (tmtTime in s) {
-            val x = tmtTime.value.epochSeconds
-            val y = tmtTime.value.nanosecondsOfSecond.toLong()
-            la = la + x
-            la = la + y
-        }
-        return la
-    }
-
+    fun tencode(t: Array<TMTTime>): Array<String> =  t.map { it.value.toString() }.toTypedArray() //.joinToString(",")
 }

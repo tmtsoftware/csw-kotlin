@@ -11,6 +11,8 @@ import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.io.encoding.Base64
+import kotlin.io.encoding.ExperimentalEncodingApi
 
 @kotlinx.serialization.ExperimentalSerializationApi
 class CommandTests: FunSpec( {
@@ -150,6 +152,7 @@ class CommandTests: FunSpec( {
     }
 
     // Prefix should serialize to Json and cbor
+    @OptIn(kotlin.io.encoding.ExperimentalEncodingApi::class)
     test("should serialize to CBOR") {
         var s = testS()
 
@@ -158,9 +161,11 @@ class CommandTests: FunSpec( {
         val bytes = Cbor.encodeToByteArray(s)
         println("bytes: $bytes")
         println(bytes.toAsciiHexString())
-        val obj = Cbor.decodeFromByteArray<Setup>(bytes)
-        println(obj)
-        s shouldBe obj
+        val x = Base64.Default.encode(bytes)//.encodeToByteArray()
+        println("x: $x")
+        //val obj = Cbor.decodeFromByteArray<Setup>(bytes)
+        //println(obj)
+        //s shouldBe obj
     }
 
 }

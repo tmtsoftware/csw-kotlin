@@ -1,7 +1,6 @@
 package csw.params.keys
 
 import arrow.core.*
-import csw.params.codecs.TopParamSerializer
 import csw.params.commands.HasParms
 import csw.params.keys.KeyHelpers.toDoubleArray
 import csw.params.keys.StoredType.*
@@ -11,6 +10,7 @@ import kotlinx.serialization.Serializable
 enum class StoredType { NUMBER, INTEGER, BOOLEAN, STRING }
 
 //@Serializable(with=TopParamSerializer::class)
+//@Serializable
 data class Qstore(override val name: Key, val stype: StoredType,
                   val values: Array<String>, val units: Units = Units.NoUnits) : HasKey {
     val asDoubles: DoubleArray
@@ -144,7 +144,7 @@ data class IntegerKey(override val name: Key, val units: Units = Units.NoUnits):
 
 /* SStore has no units */
 //@Serializable(with=TopParamSerializer::class)
-@Serializable
+//@Serializable
 data class Sstore(override val name: Key, val stype: StoredType, val value: Array<String>) : HasKey {
 
     override fun equals(other: Any?): Boolean {

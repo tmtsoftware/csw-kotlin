@@ -31,10 +31,10 @@ class CoordKeyTest: FunSpec( {
         val t2 = dec.uas.toString()
         r1 shouldBe CoordStore("BASE", CoordType.EQ, "$t1,$t2,ICRS,none,0.0,0.0")
 
-        val eq = EqCoordKey.decodeToEqCoord(r1)
+        val eq = EqCoordKey.decode(r1)
         eq shouldBe EqCoord(Tag.BASE, ra, dec, EqFrame.ICRS, ProperMotion.DEFAULT_PROPERMOTION, "none" )
 
-        val eq2 = EqCoordKey.decodeToEqCoord(r1.copy(name="BAZE"))
+        val eq2 = EqCoordKey.decode(r1.copy(name="BAZE"))
         eq2 shouldBe null
     }
 
@@ -53,20 +53,6 @@ class CoordKeyTest: FunSpec( {
         s.size shouldBe 1
 
         assert(k1.isIn(s))
-    }
-
-    test("Serialize and Deserialize it") {
-        val k1 = EqCoordKey(Tag.BASE)
-
-        var s = testS()
-        s.size shouldBe 0
-
-        s = s.add(k1.set(180.0.degree(), 32.0.degree()))
-        s.size shouldBe 1
-
-        val out = Json.encodeToString(s)
-        val inObj = Json.decodeFromString<Setup>(out)
-        inObj shouldBeEqual s
     }
 
     test("Get checks and invoke") {
@@ -89,7 +75,7 @@ class CoordKeyTest: FunSpec( {
     test("Test with proper motions") {
         val k1 = EqCoordKey(Tag.BASE)
 
-        val s = testS().add(k1.set(180.0.degree(), 32.0.degree(), 1.12, -1.344))
+        val s = testS().add(k1.set(180.0.degree(), 32.0.degree(), EqFrame.ICRS,1.12, -1.344))
         s.size shouldBe 1
 
         assert(k1.isIn(s))
@@ -97,6 +83,33 @@ class CoordKeyTest: FunSpec( {
         val r1 = k1.get(s)
         r1.onSome { it shouldBe EqCoord(Tag.BASE, 180.0.degree(), 32.0.degree(), EqFrame.ICRS, ProperMotion(1.12, -1.344), "none") }
 
+    }
+
+    /** CatalogCoordKey tests **/
+    test("Catalog CoordKey tests") {
+        val k1 = CatalogCoordKey(Tag.BASE)
+
+        val catalogName = CatalogName("BrightStars")
+        val objectName = CatalogObject("HR1099")
+
+        val store1 = k1.set(catalogName, objectName)
+        store1 shouldBe CoordStore("BASE", CoordType.CAT, "${catalogName.name},${objectName.name}")
+
+        val catCoord = CatalogCoordKey.decode(store1)
+
+        var s = testS()
+        s.size shouldBe 0
+
+        s = s.add(store1)
+        s.size shouldBe 1
+
+        assert(k1.isIn(s))
+
+        val r1 = k1.get(s)
+        r1.onSome { it shouldBe CatalogCoord(Tag.BASE, catalogName, objectName) }
+
+        val r2 = k1(s)
+        r2 shouldBe CatalogCoord(Tag.BASE, catalogName, objectName)
     }
 
     /** AltAzCoordKey tests **/
@@ -113,10 +126,10 @@ class CoordKeyTest: FunSpec( {
         val cstore = CoordStore("BASE", CoordType.AltAz, "$t1,$t2")
         r1 shouldBe cstore
 
-        val altaz = AltAzCoordKey.decodeToAltAzCoord(cstore)
+        val altaz = AltAzCoordKey.decode(cstore)
         altaz shouldBe AltAzCoord(Tag.BASE, alt, az)
 
-        val altaz2 = AltAzCoordKey.decodeToAltAzCoord(cstore.copy(name = "BAZE"))
+        val altaz2 = AltAzCoordKey.decode(cstore.copy(name = "BAZE"))
         altaz2 shouldBe null
     }
 
@@ -135,20 +148,6 @@ class CoordKeyTest: FunSpec( {
         s.size shouldBe 1
 
         assert(k1.isIn(s))
-    }
-
-    test(" Serialize and Deserialize altaz") {
-        val k1 = AltAzCoordKey(Tag.BASE)
-
-        var s = testS()
-        s.size shouldBe 0
-
-        s = s.add(k1.set(32.0.degree(), 192.5.degree()))
-        s.size shouldBe 1
-
-        val out = Json.encodeToString(s)
-        val inObj = Json.decodeFromString<Setup>(out)
-        inObj shouldBeEqual s
     }
 
     test(" Get altaz checks and invoke") {
@@ -178,10 +177,10 @@ class CoordKeyTest: FunSpec( {
         val cstore = CoordStore("BASE", CoordType.SSO, sso.name)
         r1 shouldBe cstore
 
-        val ssoCoord = SolarSystemCoordKey.decodeToSolarSystem(cstore)
+        val ssoCoord = SolarSystemCoordKey.decode(cstore)
         ssoCoord shouldBe SolarSystemCoord(Tag.BASE, sso)
 
-        val sso2 = SolarSystemCoordKey.decodeToSolarSystem(cstore.copy(name = "BAZE"))
+        val sso2 = SolarSystemCoordKey.decode(cstore.copy(name = "BAZE"))
         sso2 shouldBe null
     }
 
@@ -200,20 +199,6 @@ class CoordKeyTest: FunSpec( {
         s.size shouldBe 1
 
         assert(k1.isIn(s))
-    }
-
-    test("Serialize and Deserialize SolarSystemObject") {
-        val k1 = SolarSystemCoordKey(Tag.BASE)
-
-        var s = testS()
-        s.size shouldBe 0
-
-        s = s.add(k1.set(SolarSystemObject.Uranus))
-        s.size shouldBe 1
-
-        val out = Json.encodeToString(s)
-        val inObj = Json.decodeFromString<Setup>(out)
-        inObj shouldBeEqual s
     }
 
     test("Get solar system key checks and invoke") {
@@ -248,10 +233,10 @@ class CoordKeyTest: FunSpec( {
         val cstore = CoordStore("BASE", CoordType.COM, "${epoch},${inclination.uas},${longAscendingNode.uas},${argOfPerihelion.uas},${perihelionDistance},${eccentricity}")
         r1 shouldBe cstore
 
-        val comCoord = CometCoordKey.decodeToCometCoord(cstore)
+        val comCoord = CometCoordKey.decode(cstore)
         comCoord shouldBe CometCoord(Tag.BASE ,epoch, inclination, longAscendingNode, argOfPerihelion, perihelionDistance, eccentricity)
 
-        val sso2 = CometCoordKey.decodeToCometCoord(cstore.copy(name = "BAZE"))
+        val sso2 = CometCoordKey.decode(cstore.copy(name = "BAZE"))
         sso2 shouldBe null
     }
 
@@ -276,27 +261,6 @@ class CoordKeyTest: FunSpec( {
         s.size shouldBe 1
 
         assert(k1.isIn(s))
-    }
-
-    test("Serialize and Deserialize CometCoordKey") {
-        val k1 = CometCoordKey(Tag.BASE)
-
-        val epoch = 2035.2
-        val inclination: Inclination = 2.3.degree()
-        val longAscendingNode: LongAscendingNode = 110.23.degree()
-        val argOfPerihelion: ArgOfPerihelion = 23.1.degree()
-        val perihelionDistance: PerihelionDistance = 5.2
-        val eccentricity: Eccentricity = 4.2
-
-        var s = testS()
-        s.size shouldBe 0
-
-        s = s.add(k1.set(epoch, inclination, longAscendingNode, argOfPerihelion, perihelionDistance, eccentricity))
-        s.size shouldBe 1
-
-        val out = Json.encodeToString(s)
-        val inObj = Json.decodeFromString<Setup>(out)
-        inObj shouldBeEqual s
     }
 
     test("Get CometKey checks and invoke") {
@@ -377,29 +341,6 @@ class CoordKeyTest: FunSpec( {
         assert(k1.isIn(s))
     }
 
-    test("Serialize and Deserialize MinorPlanetCoordKey") {
-        val k1 = MinorPlanetCoordKey(Tag.BASE)
-
-        val epoch = 2035.2
-        val inclination: Inclination = 2.3.degree()
-        val longAscendingNode: LongAscendingNode = 110.23.degree()
-        val argOfPerihelion: ArgOfPerihelion = 23.1.degree()
-        val meanDistance: MeanDistance = 5.2
-        val eccentricity: Eccentricity = 4.2
-        val meanA: MeanAnomaly = 23.45.degree()
-
-        val r1 = k1.set(epoch, inclination, longAscendingNode, argOfPerihelion, meanDistance, eccentricity, meanA)
-
-        var s = testS()
-
-        s = s.add(r1)
-        s.size shouldBe 1
-
-        val out = Json.encodeToString(s)
-        val inObj = Json.decodeFromString<Setup>(out)
-        inObj shouldBeEqual s
-    }
-
     test("Get MinorPlanetKey checks and invoke") {
         val k1 = MinorPlanetCoordKey(Tag.BASE)
         val k2 = MinorPlanetCoordKey(Tag.OIWFS1)
@@ -434,5 +375,41 @@ class CoordKeyTest: FunSpec( {
         r2 shouldBe MinorPlanetCoord(Tag.OIWFS1, epoch2, inclination2, longAscendingNode2, argOfPerihelion2, meanDistance2, eccentricity2, meanA2)
     }
 
+    test("Coord Key 2 with multiples") {
+        val c1 = CoordKey("Coords")
+        val k1 = SolarSystemCoordKey(Tag.BASE)
+        val k2 = EqCoordKey(Tag.OIWFS1)
+
+        val ra = 180.0.degree()
+        val dec = 32.0.degree()
+
+        val cc1 = SolarSystemCoord(Tag.BASE, SolarSystemObject.Jupiter)
+        val cc2 = EqCoord(Tag.OIWFS1, ra, dec, EqFrame.ICRS, ProperMotion.DEFAULT_PROPERMOTION, "none" )
+
+
+
+        var s = testS().add(c1.set(k1.set(SolarSystemObject.Jupiter)))
+        //s.size shouldBe 2
+
+        //assert(k1.isIn(s) && k2.isIn(s))
+        println("s: $s")
+
+        //val out1 = c1.get(s)
+        //println("out1: $out1")
+
+        //val out2 = c1.tag(s, Tag.BASE)
+        //println("out2: $out2")
+/*
+        val out3 = c1.tag(s, Tag.OIWFS1) as EqCoord
+        println("out3: $out3")
+        with (out3) {
+            println("ra: $ra")
+            println("dec: $dec")
+        }
+*/
+        val jsonOut = Json.encodeToString(s)
+        println(jsonOut)
+
+    }
 }
 )

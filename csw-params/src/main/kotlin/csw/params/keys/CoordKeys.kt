@@ -1,14 +1,15 @@
 package csw.params.keys
 
-import arrow.core.None
-import arrow.core.Option
-import arrow.core.getOrElse
+import arrow.core.*
 import csw.params.commands.HasParms
 import csw.params.core.models.*
 import kotlinx.serialization.Serializable
 
-
 enum class CoordType { EQ, AltAz, SSO, COM, MP, CAT }
+
+interface Tagged {
+    val tag: Tag
+}
 
 @Serializable
 data class CoordStore(override val name: Key, val ctype: CoordType, val value: String) : HasKey {
@@ -17,32 +18,78 @@ data class CoordStore(override val name: Key, val ctype: CoordType, val value: S
             val s: HasKey? = target.nget(name)
             return if (s is CoordStore) s else null
         }
+
+        fun coord(c: CoordStore): Coord? {
+            val y = when (c.ctype) {
+                CoordType.EQ -> EqCoordKey.decode(c)
+                CoordType.SSO -> SolarSystemCoordKey.decode(c)
+                CoordType.AltAz -> AltAzCoordKey.decode(c)
+                CoordType.COM -> CometCoordKey.decode(c)
+                CoordType.MP -> MinorPlanetCoordKey.decode(c)
+                CoordType.CAT -> CatalogCoordKey.decode(c)
+                else -> null
+            }
+            return y
+        }
     }
 }
 
-@Serializable
-data class CatStore(override val name: Key, val ctype: CoordType, val catalogName: String, val catalogObject: String) :
-    HasKey
+data class CatalogCoordKey(override val tag: Tag): IsKey, Tagged {
+    override val name = tag.name
+    private val notFound = "Parameter set does not contain key: $name"
 
+    fun set(catalogName: CatalogName, catalogObject: CatalogObject): CoordStore =
+        CoordStore(name, CoordType.CAT, encode(catalogName, catalogObject))
 
-data class EqCoordKey(val tag: Tag) : IsKey {
+    fun isIn(target: HasParms): Boolean = target.exists(this)
+
+    fun get(target: HasParms): Option<CatalogCoord> {
+        val catCoord: CatalogCoord? = CoordStore.getStored(name, target)?.let { stored ->
+            decode(stored)
+        }
+        return catCoord?.let { Option.fromNullable(it) } ?: None
+    }
+
+    operator fun invoke(target: HasParms): CatalogCoord = get(target).getOrElse { throw NoSuchElementException(notFound) }
+
+    companion object {
+        private const val DELIM = ","
+        private fun encode(catalogName: CatalogName, catalogObject: CatalogObject): String {
+            return "${catalogName.name}$DELIM${catalogObject.name}"
+        }
+
+        fun decode(cstore: CoordStore): CatalogCoord? {
+            require(cstore.ctype == CoordType.CAT)
+            // Test first
+            val tag = if (Tag.names.contains(cstore.name)) {
+                Tag.valueOf(cstore.name)
+            } else return null
+
+            val items = cstore.value.split(DELIM)
+            require(items.size == 2) { "Expected exactly 2 items for CatalogCoord, got ${items.size}" }
+
+            val catalogName = CatalogName(items[0])
+            val catalogObject = CatalogObject(items[1])
+            return CatalogCoord(tag, catalogName, catalogObject)
+        }
+    }
+}
+
+data class EqCoordKey(override val tag: Tag) : IsKey, Tagged {
     override val name = tag.name
     private val notFound = "Parameter set does not contain key: $name"
 
     fun set(raH: Angle, decD: Angle, frame: EqFrame = EqCoord.DEFAULT_FRAME) =
         encode(tag, CoordType.EQ, raH, decD, frame, EqCoord.DEFAULT_PMX, EqCoord.DEFAULT_PMY)
 
-    fun set(raH: Angle, decD: Angle, pmra: Double, pmdec: Double): HasKey {
-        return encode(tag, CoordType.EQ, raH, decD, EqFrame.ICRS, pmra, pmdec)
-    }
-
-    fun set(catalogName: String, catalogObject: String) = CatStore(tag.name, CoordType.CAT, catalogName, catalogObject)
+    fun set(raH: Angle, decD: Angle, frame: EqFrame, pmra: Double, pmdec: Double) =
+        encode(tag, CoordType.EQ, raH, decD, frame, pmra, pmdec)
 
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
     fun get(target: HasParms): Option<EqCoord> {
         val eqCoord: EqCoord? = CoordStore.getStored(name, target)?.let { stored ->
-            decodeToEqCoord(stored)
+            decode(stored)
         }
         return eqCoord?.let { Option.fromNullable(it) } ?: None
     }
@@ -60,9 +107,9 @@ data class EqCoordKey(val tag: Tag) : IsKey {
             pmra: Double,
             pmdec: Double
         ): CoordStore =
-            CoordStore(tag.name, ctype, encodeValues(ra, dec, frame, "none", pmra, pmdec))
+            CoordStore(tag.name, ctype, encode(ra, dec, frame, "none", pmra, pmdec))
 
-        private fun encodeValues(
+        fun encode(
             ra: Angle, dec: Angle, frame: EqFrame = EqCoord.DEFAULT_FRAME,
             catName: String = EqCoord.DEFAULT_CATNAME,
             pmra: Double = EqCoord.DEFAULT_PMX, pmdec: Double = EqCoord.DEFAULT_PMY
@@ -70,14 +117,15 @@ data class EqCoordKey(val tag: Tag) : IsKey {
             return "${ra.uas}$DELIM${dec.uas}$DELIM$frame$DELIM$catName$DELIM$pmra$DELIM$pmdec"
         }
 
-        fun decodeToEqCoord(cstore: CoordStore): EqCoord? {
-            val items = cstore.value.split(DELIM)
+        fun decode(cstore: CoordStore): EqCoord? {
             require(cstore.ctype == CoordType.EQ)
-            require(items.size == 6) { "Expected exactly 6 items for EqCoord, got ${items.size}" }
             // Test first
             val tag = if (Tag.names.contains(cstore.name)) {
                 Tag.valueOf(cstore.name)
             } else return null
+
+            val items = cstore.value.split(DELIM)
+            require(items.size == 6) { "Expected exactly 6 items for EqCoord, got ${items.size}" }
 
             val frameStr = items[2]
             val frame = if (EqFrame.names.contains(frameStr)) {
@@ -97,11 +145,11 @@ data class EqCoordKey(val tag: Tag) : IsKey {
     }
 }
 
-data class AltAzCoordKey(val tag: Tag) : IsKey {
+data class AltAzCoordKey(override val tag: Tag) : IsKey, Tagged {
     override val name = tag.name
     private val notFound = "Parameter set does not contain key: $name"
 
-    fun set(alt: Angle, az: Angle): HasKey {
+    fun set(alt: Angle, az: Angle): CoordStore {
         if (alt.toDegree() > 90.0 || alt.toDegree() < -90.0) throw IllegalArgumentException("Altitude must be between +/- 90.0")
         if (az.toDegree() > 360.0 || az.toDegree() < -360.0) throw IllegalArgumentException("Azimuth must be between +/- 360.0")
         return CoordStore(tag.name, CoordType.AltAz, encode(alt, az))
@@ -111,7 +159,7 @@ data class AltAzCoordKey(val tag: Tag) : IsKey {
 
     fun get(target: HasParms): Option<AltAzCoord> {
         val altAzCoord: AltAzCoord? = CoordStore.getStored(name, target)?.let { stored ->
-            decodeToAltAzCoord(stored)
+            decode(stored)
         }
         return altAzCoord?.let { Option.fromNullable(it) } ?: None
     }
@@ -123,7 +171,7 @@ data class AltAzCoordKey(val tag: Tag) : IsKey {
 
         fun encode(alt: Angle, az: Angle): String = "${alt.uas}$DELIM${az.uas}"
 
-        fun decodeToAltAzCoord(cstore: CoordStore): AltAzCoord? {
+        fun decode(cstore: CoordStore): AltAzCoord? {
             val items = cstore.value.split(DELIM)
             require(cstore.ctype == CoordType.AltAz)
             require(items.size == 2) { "Expected exactly 2 items for AltAzCoord, but got ${items.size}" }
@@ -139,17 +187,17 @@ data class AltAzCoordKey(val tag: Tag) : IsKey {
     }
 }
 
-data class SolarSystemCoordKey(val tag: Tag) : IsKey {
+data class SolarSystemCoordKey(override val tag: Tag) : IsKey, Tagged {
     override val name = tag.name
     private val notFound = "Parameter set does not contain key: $name"
 
-    fun set(body: SolarSystemObject): HasKey = CoordStore(tag.name, CoordType.SSO, encode(body))
+    fun set(body: SolarSystemObject) = CoordStore(tag.name, CoordType.SSO, encode(body))
 
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
     fun get(target: HasParms): Option<SolarSystemCoord> {
         val ssCoord: SolarSystemCoord? = CoordStore.getStored(name, target)?.let { stored ->
-            decodeToSolarSystem(stored)
+            decode(stored)
         }
         return ssCoord?.let { Option.fromNullable(it) } ?: None
     }
@@ -161,7 +209,7 @@ data class SolarSystemCoordKey(val tag: Tag) : IsKey {
 
         fun encode(body: SolarSystemObject): String = body.name
 
-        fun decodeToSolarSystem(cstore: CoordStore): SolarSystemCoord? {
+        fun decode(cstore: CoordStore): SolarSystemCoord? {
             require(cstore.ctype == CoordType.SSO)
             // Test first
             val tag = if (Tag.names.contains(cstore.name)) {
@@ -176,15 +224,14 @@ data class SolarSystemCoordKey(val tag: Tag) : IsKey {
     }
 }
 
-data class CometCoordKey(val tag: Tag) : IsKey {
+data class CometCoordKey(override val tag: Tag) : IsKey, Tagged {
     override val name = tag.name
     private val notFound = "Parameter set does not contain key: $name"
 
     fun set(
         epochOfPerihelion: EpochOfPerihelion, inclination: Inclination, longAscendingNode: LongAscendingNode,
         argOfPerihelion: ArgOfPerihelion, perihelionDistance: PerihelionDistance, eccentricity: Eccentricity
-    ): HasKey =
-        CoordStore(
+    ) = CoordStore(
             tag.name, CoordType.COM, encode(
                 epochOfPerihelion, inclination, longAscendingNode,
                 argOfPerihelion, perihelionDistance, eccentricity
@@ -195,7 +242,7 @@ data class CometCoordKey(val tag: Tag) : IsKey {
 
     fun get(target: HasParms): Option<CometCoord> {
         val ssCoord: CometCoord? = CoordStore.getStored(name, target)?.let { stored ->
-            decodeToCometCoord(stored)
+            decode(stored)
         }
         return ssCoord?.let { Option.fromNullable(it) } ?: None
     }
@@ -211,7 +258,7 @@ data class CometCoordKey(val tag: Tag) : IsKey {
         ): String =
             "${epochOfPerihelion}$DELIM${inclination.uas}$DELIM${longAscendingNode.uas}$DELIM${argOfPerihelion.uas}$DELIM$perihelionDistance$DELIM$eccentricity"
 
-        fun decodeToCometCoord(cstore: CoordStore): CometCoord? {
+        fun decode(cstore: CoordStore): CometCoord? {
             val items = cstore.value.split(DELIM)
             require(cstore.ctype == CoordType.COM)
             require(items.size == 6) { "Expected exactly 6 items for CometCoord, but got ${items.size}" }
@@ -241,7 +288,7 @@ data class CometCoordKey(val tag: Tag) : IsKey {
     }
 }
 
-data class MinorPlanetCoordKey(val tag: Tag) : IsKey {
+data class MinorPlanetCoordKey(override val tag: Tag) : IsKey, Tagged {
     override val name = tag.name
     private val notFound = "Parameter set does not contain key: $name"
 
@@ -253,7 +300,7 @@ data class MinorPlanetCoordKey(val tag: Tag) : IsKey {
         meanDistance: MeanDistance,
         eccentricity: Eccentricity,
         meanAnomaly: MeanAnomaly
-    ): HasKey =
+    ) =
         CoordStore(
             tag.name, CoordType.MP, encode(
                 epoch, inclination, longAscendingNode,
@@ -317,4 +364,45 @@ data class MinorPlanetCoordKey(val tag: Tag) : IsKey {
             )
         }
     }
+}
+
+
+@Serializable
+data class CoordContainer(override val name: Key, val values: List<CoordStore>) : HasKey {
+
+    val tags: List<Tag>
+        get() = values.map { Tag.valueOf(it.name) }.toList()
+
+}
+
+
+data class CoordKey(override val name: Key): IsKey {
+    private val notFound = "Parameter set does not contain key: $name"
+
+    fun set(value: CoordStore, vararg values: CoordStore): CoordContainer =
+        CoordContainer(name, arrayOf(value, *values).toList())
+
+    fun isIn(target: HasParms): Boolean = target.exists(this)
+
+    fun get(target: HasParms): Option<Array<CoordStore>> {
+        val ssCoord: CoordContainer? = KeyHelpers.getStored<CoordContainer>(this, target)
+        return ssCoord?.values?.toTypedArray().toOption()
+    }
+
+    fun tag(target: HasParms, tag: Tag) : Coord? {
+        val ssCoord: CoordContainer? = KeyHelpers.getStored<CoordContainer>(this, target)
+        if (ssCoord == null) return null
+        val x = ssCoord.tags
+        if (!x.contains(tag)) return null
+        val y = ssCoord.values.first { it.name == tag.value }
+        println("X: $x")
+        val z = CoordStore.coord(y)
+        println("y: $z")
+        return z
+    }
+
+
+    operator fun invoke(target: HasParms): Array<CoordStore> = get(target).getOrElse { throw NoSuchElementException(notFound) }
+
+
 }

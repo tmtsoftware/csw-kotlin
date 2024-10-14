@@ -1,200 +1,344 @@
 package csw.params.codecs
 
-import csw.params.codecs.NumberSerializer.NumberCore
+import csw.params.core.models.Angle
+import csw.params.core.models.EqFrame
 import csw.params.keys.*
-import kotlinx.serialization.*
-import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.builtins.serializer
-import kotlinx.serialization.descriptors.*
-import kotlinx.serialization.encoding.*
-import kotlinx.serialization.json.*
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-object NumberSerializer: KSerializer<Qstore> {
-    @Serializable
-    data class NumberCore(val keyName: String, val values: DoubleArray, val units: Units)
-    private val sss1:KSerializer<Map<String,NumberCore>> = MapSerializer(String.serializer(), NumberCore.serializer())
-    override val descriptor = sss1.descriptor
-
-    override fun serialize(encoder: Encoder, value: Qstore) {
-        require(value.stype == StoredType.NUMBER)
-        encoder.encodeSerializableValue(sss1, hashMapOf("DoubleKey" to NumberCore(value.name, value.asDoubles, value.units)))
-    }
-
-    override fun deserialize(decoder: Decoder): Qstore {
-        val hmap = decoder.decodeSerializableValue(sss1)
-        val (keyType, param) = hmap.entries.first()
-        require(keyType == "DoubleKey" || keyType == "FloatKey")
-        return Qstore(param.keyName, StoredType.NUMBER, param.values.map { it.toString() }.toTypedArray(), param.units)
-     }
-}
-
-object IntegerSerializer: KSerializer<Qstore> {
-    @Serializable
-    data class IntegerCore(val keyName: String, val values: LongArray, val units: Units)
-    private val sss1:KSerializer<Map<String,IntegerCore>> = MapSerializer(String.serializer(), IntegerCore.serializer())
-    override val descriptor = sss1.descriptor
-
-    override fun serialize(encoder: Encoder, value: Qstore) {
-        require(value.stype == StoredType.INTEGER)
-        encoder.encodeSerializableValue(sss1, hashMapOf("LongKey" to IntegerCore(value.name, value.values.map { it.toLong()}.toLongArray(), value.units)))
-    }
-
-    private fun allowed(keyType: String): Boolean =
-        keyType == "IntKey" || keyType == "LongKey" || keyType == "ShortKey"
-
-    override fun deserialize(decoder: Decoder): Qstore {
-        val spmap = decoder.decodeSerializableValue(sss1)
-        val (keyType, param) = spmap.entries.first()
-        require (allowed(keyType))
-        return Qstore(param.keyName, StoredType.INTEGER, param.values.map { it.toString() }.toTypedArray(), param.units)
-    }
-}
-
-object StringSerializer: KSerializer<Sstore> {
-    @Serializable
-    data class StringCore(val keyName: String, val values: Array<String>, val units: Units)
-    private val sss1:KSerializer<Map<String,StringCore>> = MapSerializer(String.serializer(), StringCore.serializer())
-
-    override val descriptor = sss1.descriptor
-
-    override fun serialize(encoder: Encoder, sstore: Sstore) {
-        require(sstore.stype == StoredType.STRING)
-        encoder.encodeSerializableValue(sss1,
-            hashMapOf("StringKey" to StringCore(sstore.name, sstore.value, Units.NoUnits)))
-    }
-
-    override fun deserialize(decoder: Decoder): Sstore {
-        val spmap = decoder.decodeSerializableValue(sss1)
-        val (keyType, param) = spmap.entries.first()
-        require(keyType == "StringKey" || keyType == "CharKey")
-        return Sstore(param.keyName, StoredType.STRING, param.values)
-    }
-}
-
-object BooleanSerializer: KSerializer<Sstore> {
-    @Serializable
-    data class BooleanCore(val keyName: String, val values: BooleanArray, val units: Units)
-
-    private val sss1:KSerializer<Map<String,BooleanCore>> = MapSerializer(String.serializer(), BooleanCore.serializer())
-    override val descriptor = sss1.descriptor
-
-    override fun serialize(encoder: Encoder, sstore: Sstore) {
-        require(sstore.stype == StoredType.BOOLEAN)
-        encoder.encodeSerializableValue(sss1, hashMapOf("BooleanKey" to BooleanCore(sstore.name,
-            sstore.value.map { it.toBoolean() }.toBooleanArray(), Units.NoUnits)))
-    }
-
-    override fun deserialize(decoder: Decoder): Sstore {
-        val spmap = decoder.decodeSerializableValue(sss1)
-        val (keyType, param) = spmap.entries.first()
-        require(keyType == "BooleanKey")
-        return Sstore(param.keyName, StoredType.BOOLEAN, param.values.map { it.toString() }.toTypedArray())
-    }
-}
-
-object ChoiceSerializer: KSerializer<ChoiceStore> {
-    @Serializable
-    data class ChoiceCore(val keyName: String, val values: Array<String>, val units: Units)
-
-    private val sss1:KSerializer<Map<String,ChoiceCore>> = MapSerializer(String.serializer(), ChoiceCore.serializer())
-    override val descriptor = sss1.descriptor
-
-    override fun serialize(encoder: Encoder, cstore: ChoiceStore) {
-        encoder.encodeSerializableValue(sss1, hashMapOf("ChoiceKey" to ChoiceCore(cstore.name, cstore.choice, cstore.units)))
-    }
-
-    override fun deserialize(decoder: Decoder): ChoiceStore {
-        val spmap = decoder.decodeSerializableValue(sss1)
-        val (keyType, param) = spmap.entries.first()
-        require(keyType == "ChoiceKey")
-        return ChoiceStore(param.keyName, param.values, param.units)
-    }
-}
-
-/* ------------------ */
-
-object ParamDeserializer : JsonContentPolymorphicSerializer<HasKey>(HasKey::class) {
-    override fun selectDeserializer(content: JsonElement) = when {
-        "DoubleKey" in content.jsonObject -> NumberSerializer
-        "FloatKey" in content.jsonObject -> NumberSerializer
-        "LongKey" in content.jsonObject -> IntegerSerializer
-        "IntKey" in content.jsonObject -> IntegerSerializer
-        "StringKey" in content.jsonObject -> StringSerializer
-        "CharKey" in content.jsonObject -> StringSerializer
-        "BooleanKey" in content.jsonObject -> BooleanSerializer
-        "ChoiceKey" in content.jsonObject -> ChoiceSerializer
-        else -> throw IllegalArgumentException("Bad case")
-    }
-}
-
-object ParamDeserializer2: KSerializer<HasKey> {
-    override val descriptor: SerialDescriptor = HasKey.serializer().descriptor
-
-    //private val sss1:KSerializer<Map<String, NumberCore>> = MapSerializer(String.serializer(), NumberCore.serializer())
-    private val sss1 = String.serializer()
-
-
-    override fun deserialize(decoder: Decoder): HasKey {
-        //val hmap = decoder.decodeSerializableValue(sss1)
-        //val (keyType, param) = hmap.entries.first()
-        val st = decoder.beginStructure(descriptor)
-        val xx = st.decodeStringElement(descriptor, 0)
-        println("keyType = $xx")
-        //println("param = $param")
-        val de = decoder.beginStructure(descriptor)
-        val x = NumberCore.serializer().deserialize(decoder) as HasKey
-        println("x: $x")
-        de.endStructure(descriptor)
-        return x
-    }
-
-    override fun serialize(encoder: Encoder, value: HasKey) {
-        TopParamSerializer.serialize(encoder, value)
-    }
-}
-
-/* ------------------------- */
-
-object ParamSerializer: KSerializer<HasKey> {
+object ParamSerializer : KSerializer<HasKey> {
 
     override val descriptor: SerialDescriptor = HasKey.serializer().descriptor
 
     override fun serialize(encoder: Encoder, value: HasKey) {
         when (value) {
             is Qstore ->
-                if (value.stype == StoredType.INTEGER)
-                    IntegerSerializer.serialize(encoder, value)
-                else
-                    NumberSerializer.serialize(encoder, value)
+                when (value.stype) {
+                    StoredType.INTEGER -> {
+                        val param = Param("LongKey", value.name, value.values.map { it.toLong() }.toList(), value.units)
+                        Param.serializer().serialize(encoder, param)
+                    }
+
+                    StoredType.NUMBER -> {
+                        val param = Param("DoubleKey", value.name, value.asDoubles.toList(), value.units)
+                        Param.serializer().serialize(encoder, param)
+                    }
+
+                    else -> throw SerializationException("Wrong Qstore stype: ${value.stype}")
+                }
+
             is Sstore ->
-                if (value.stype == StoredType.STRING)
-                    StringSerializer.serialize(encoder, value)
-                else
-                    BooleanSerializer.serialize(encoder, value)
-            is ChoiceStore -> ChoiceSerializer.serialize(encoder, value)
-            else -> throw IllegalArgumentException("Don't know it: $value")
+                when (value.stype) {
+                    StoredType.STRING -> {
+                        val param = Param("StringKey", value.name, value.value.toList(), Units.NoUnits)
+                        Param.serializer().serialize(encoder, param)
+                    }
+
+                    StoredType.BOOLEAN -> {
+                        val param =
+                            Param("BooleanKey", value.name, value.value.map { it.toBoolean() }.toList(), Units.NoUnits)
+                        Param.serializer().serialize(encoder, param)
+                    }
+
+                    else -> throw SerializationException("Wrong Sstore stype: ${value.stype}")
+                }
+
+            is ChoiceStore -> {
+                val param = Param("ChoiceKey", value.name, value.choice.toList(), value.units)
+                Param.serializer().serialize(encoder, param)
+            }
+
+            is TimeStore -> {
+                when (value.ttype) {
+                    TimeType.TAI -> {
+                        val param = Param("TAITimeKey", value.name, value.svalue.toList(), Units.tai)
+                        Param.serializer().serialize(encoder, param)
+                    }
+
+                    TimeType.UTC -> {
+                        val param = Param("UTCTimeKey", value.name, value.svalue.toList(), Units.utc)
+                        Param.serializer().serialize(encoder, param)
+                    }
+                }
+            }
+
+            is CoordContainer -> {
+                var cvalues = mutableListOf<CoordSurrogate>()
+                for (c in value.values) {
+                    when (c.ctype) {
+                        CoordType.SSO -> cvalues.add(SolarSystemSurrogate(c.name, c.value))
+                        CoordType.EQ ->
+                            EqCoordKey.decode(c)?.let {
+                                cvalues.add(
+                                    EqSurrogate(
+                                        it.tag.value,
+                                        it.ra.uas,
+                                        it.dec.uas,
+                                        it.frame.toString(),
+                                        it.catalogName,
+                                        PMSurrogate(it.pm.pmx, it.pm.pmy)
+                                    )
+                                )
+                            }
+
+                        CoordType.AltAz ->
+                            AltAzCoordKey.decode(c)?.let {
+                                cvalues.add(
+                                    AltAzSurrogate(
+                                        it.tag.value,
+                                        it.alt.uas,
+                                        it.az.uas
+                                    )
+                                )
+                            }
+
+                        CoordType.COM ->
+                            CometCoordKey.decode(c)?.let {
+                                cvalues.add(
+                                    CometSurrogate(
+                                        it.tag.value,
+                                        it.epochOfPerihelion,
+                                        it.inclination.uas,
+                                        it.longAscendingNode.uas,
+                                        it.argOfPerihelion.uas,
+                                        it.perihelionDistance,
+                                        it.eccentricity
+                                    )
+                                )
+                            }
+
+                        CoordType.MP ->
+                            MinorPlanetCoordKey.decode(c)?.let {
+                                cvalues.add(
+                                    MinorPlanetSurrogate(
+                                        it.tag.value,
+                                        it.epoch,
+                                        it.inclination.uas,
+                                        it.longAscendingNode.uas,
+                                        it.argOfPerihelion.uas,
+                                        it.meanDistance,
+                                        it.eccentricity,
+                                        it.meanAnomaly.uas
+                                    )
+                                )
+                            }
+
+                        else -> throw SerializationException("Wrong coord_container stype: ${c.ctype}")
+                    }
+
+                }
+                val param = Param("CoordKey", value.name, cvalues, Units.NoUnits)
+                Param.serializer().serialize(encoder, param)
+            }
+
+            else -> throw SerializationException("Unknown type during serialization")
         }
 
     }
 
     override fun deserialize(decoder: Decoder): HasKey {
-        error("Serialization is not supported")
+        val param = Param.serializer().deserialize(decoder)
+        val result = when (param.keyType) {
+            "DoubleKey", "FloatKey" ->
+                Qstore(param.keyName, StoredType.NUMBER, param.values.map { it.toString() }.toTypedArray(), param.units)
+
+            "LongKey", "IntKey", "ShortKey", "ByteKey" ->
+                Qstore(
+                    param.keyName,
+                    StoredType.INTEGER,
+                    param.values.map { it.toString() }.toTypedArray(),
+                    param.units
+                )
+
+            "StringKey", "CharKey" ->
+                Sstore(param.keyName, StoredType.STRING, param.values.map { it.toString() }.toTypedArray())
+
+            "BooleanKey" ->
+                Sstore(param.keyName, StoredType.BOOLEAN, param.values.map { it.toString() }.toTypedArray())
+
+            "ChoiceKey" ->
+                ChoiceStore(param.keyName, param.values.map { it.toString() }.toTypedArray(), param.units)
+
+            "TAITimeKey" ->
+                TimeStore(param.keyName, TimeType.TAI, param.values.map { it.toString() }.toTypedArray())
+
+            "UTCTimeKey" ->
+                TimeStore(param.keyName, TimeType.UTC, param.values.map { it.toString() }.toTypedArray())
+
+            "CoordKey" -> {
+                val coords = param.values.filterIsInstance<CoordSurrogate>()
+                var valsOut = mutableListOf<CoordStore>()
+                coords.map {
+                    when (it) {
+                        is SolarSystemSurrogate -> valsOut.add(CoordStore(it.tag, CoordType.SSO, it.body))
+                        is EqSurrogate ->
+                            valsOut.add(
+                                CoordStore(
+                                    it.tag, CoordType.EQ,
+                                    EqCoordKey.encode(
+                                        Angle(it.ra),
+                                        Angle(it.dec),
+                                        EqFrame.valueOf(it.frame),
+                                        it.catalogName,
+                                        it.pm.pmx,
+                                        it.pm.pmy
+                                    )
+                                )
+                            )
+
+                        is AltAzSurrogate ->
+                            valsOut.add(
+                                CoordStore(
+                                    it.tag,
+                                    CoordType.AltAz,
+                                    AltAzCoordKey.encode(Angle(it.alt), Angle(it.az))
+                                )
+                            )
+                        is CometSurrogate ->
+                            valsOut.add(
+                                CoordStore(
+                                    it.tag,
+                                    CoordType.COM,
+                                    CometCoordKey.encode(
+                                        it.epochOfPerihelion,
+                                        Angle(it.inclination),
+                                        Angle(it.longAscendingNode),
+                                        Angle(it.argOfPerihelion),
+                                        it.perihelionDistance,
+                                        it.eccentricity
+                                    )
+                                )
+                            )
+                        is MinorPlanetSurrogate ->
+                            valsOut.add(
+                                CoordStore(
+                                    it.tag,
+                                    CoordType.MP,
+                                    MinorPlanetCoordKey.encode(
+                                        it.epoch,
+                                        Angle(it.inclination),
+                                        Angle(it.longAscendingNode),
+                                        Angle(it.argOfPerihelion),
+                                        it.meanDistance,
+                                        it.eccentricity,
+                                        Angle(it.meanAnomaly)
+                                    )
+                                )
+                            )
+                    }
+                }
+                CoordContainer(param.keyName, valsOut)
+            }
+
+            else -> throw SerializationException("Unknown key type during deserialization")
+        }
+        return result
     }
 }
 
-object TopParamSerializer: KSerializer<HasKey> {
-    override val descriptor: SerialDescriptor = HasKey.serializer().descriptor
 
-    override fun serialize(encoder: Encoder, value: HasKey) = ParamSerializer.serialize(encoder, value)
+@Serializable
+sealed interface CoordSurrogate
 
-    override fun deserialize(decoder: Decoder): HasKey = ParamDeserializer.deserialize(decoder)
+@Serializable
+data class PMSurrogate(val pmx: Double, val pmy: Double)
+
+@Serializable
+@SerialName("EqCoord")
+data class EqSurrogate(
+    //val _type: String,
+    val tag: String,
+    val ra: Long,
+    val dec: Long,
+    val frame: String,
+    val catalogName: String,
+    val pm: PMSurrogate
+) : CoordSurrogate {
+    fun toValue(): String =
+        EqCoordKey.encode(Angle(ra), Angle(dec), EqFrame.valueOf(frame), catalogName, pm.pmx, pm.pmy)
+
 }
 
-@SerialName("Param2")
 @Serializable
-data class BSurrogate(
-    @SerialName("ChoiceKey")
+@SerialName("AltAzCoord")
+data class AltAzSurrogate(
+    //val _type: String,
+    val tag: String,
+    val alt: Long,
+    val az: Long,
+) : CoordSurrogate
+
+@Serializable
+@SerialName("SolarSystemCoord")
+data class SolarSystemSurrogate(
+    //val _type: String,
+    val tag: String,
+    val body: String
+) : CoordSurrogate
+
+@Serializable
+@SerialName("MinorPlanetCoord")
+data class MinorPlanetSurrogate(
+    //val _type: String,
+    val tag: String,
+    val epoch: Double,
+    val inclination: Long,
+    val longAscendingNode: Long,
+    val argOfPerihelion: Long,
+    val meanDistance: Double,
+    val eccentricity: Double,
+    val meanAnomaly: Long
+) : CoordSurrogate
+
+@Serializable
+@SerialName("CometCoord")
+data class CometSurrogate(
+    //val _type: String,
+    val tag: String,
+    val epochOfPerihelion: Double,
+    val inclination: Long,
+    val longAscendingNode: Long,
+    val argOfPerihelion: Long,
+    val perihelionDistance: Double,
+    val eccentricity: Double
+) : CoordSurrogate
+
+
+@Serializable
+private data class ParamSurrogate(
+    @SerialName("DoubleKey")
+    val double: Value<Double>? = null,
+    @SerialName("DoubleArrayKey")
+    val doubleArray: Value<DoubleArray>? = null,
+    @SerialName("FloatKey")
+    val float: Value<Double>? = null,
+    @SerialName("ShortKey")
+    val short: Value<Long>? = null,
+    @SerialName("IntKey")
+    val int: Value<Long>? = null,
+    @SerialName("IntArrayKey")
+    val intArray: Value<LongArray>? = null,
+    @SerialName("LongKey")
+    val long: Value<Long>? = null,
+    @SerialName("CharKey")
+    val char: Value<String>? = null,
+    @SerialName("StringKey")
     val string: Value<String>? = null,
+    @SerialName("BooleanKey")
+    val boolean: Value<Boolean>? = null,
+    @SerialName("ChoiceKey")
+    val choice: Value<String>? = null,
+    @SerialName("CoordKey")
+    val coord: Value<CoordSurrogate>? = null,
+    @SerialName("TAITimeKey")
+    val tais: Value<String>? = null,
+    @SerialName("UTCTimeKey")
+    val utc: Value<String>? = null,
 ) {
     @Serializable
     class Value<T>(
@@ -204,18 +348,151 @@ data class BSurrogate(
     )
 }
 
+@Serializable(with = Param.Serializer::class)
+data class Param(
+    val keyType: String,
+    val keyName: Key,
+    val values: List<Any>,
+    val units: Units,
+) {
+    object Serializer : KSerializer<Param> {
+        override val descriptor: SerialDescriptor = ParamSurrogate.serializer().descriptor
+        override fun deserialize(decoder: Decoder): Param {
+            val surrogate = decoder.decodeSerializableValue(ParamSurrogate.serializer())
+            val (value, keyType) =
+                if (surrogate.double != null)
+                    Pair(surrogate.double, "DoubleKey")
+                else if (surrogate.doubleArray != null)
+                    Pair(surrogate.doubleArray, "DoubleArrayKey")
+                else if (surrogate.float != null)
+                    Pair(surrogate.float, "FloatKey")
+                else if (surrogate.short != null)
+                    Pair(surrogate.short, "ShortKey")
+                else if (surrogate.int != null)
+                    Pair(surrogate.int, "IntKey")
+                else if (surrogate.intArray != null)
+                    Pair(surrogate.intArray, "IntArrayKey")
+                else if (surrogate.long != null)
+                    Pair(surrogate.long, "LongKey")
+                else if (surrogate.char != null)
+                    Pair(surrogate.char, "CharKey")
+                else if (surrogate.string != null)
+                    Pair(surrogate.string, "StringKey")
+                else if (surrogate.boolean != null)
+                    Pair(surrogate.boolean, "BooleanKey")
+                else if (surrogate.choice != null)
+                    Pair(surrogate.choice, "ChoiceKey")
+                else if (surrogate.coord != null)
+                    Pair(surrogate.coord, "CoordKey")
+                else if (surrogate.tais != null)
+                    Pair(surrogate.tais, "TAITimeKey")
+                else if (surrogate.utc != null)
+                    Pair(surrogate.utc, "UTCTimeKey")
+                else throw SerializationException("Unknown Type")
 
-object ChoiceSerial2 : KSerializer<ChoiceStore> {
-    override val descriptor: SerialDescriptor = BSurrogate.serializer().descriptor
-    override fun deserialize(decoder: Decoder): ChoiceStore {
-        val surrogate = decoder.decodeSerializableValue(BSurrogate.serializer())
-        val value = surrogate.string
-            ?: throw SerializationException("Unknown type")
-        return ChoiceStore(value.keyName,value.values.toTypedArray(), value.units )
+            return Param(keyType, value.keyName, value.values, value.units)
+        }
+
+        override fun serialize(encoder: Encoder, param: Param) {
+            when (param.keyType) {
+                "DoubleKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            double = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<Double>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                "LongKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            long = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<Long>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                "StringKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            string = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<String>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                "BooleanKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            boolean = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<Boolean>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                "ChoiceKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            choice = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<String>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                "TAITimeKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            tais = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<String>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                "UTCTimeKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            tais = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<String>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                "CoordKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            coord = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<CoordSurrogate>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                else -> throw SerializationException("Unknown Type")
+            }
+        }
     }
-
-    override fun serialize(encoder: Encoder, value: ChoiceStore) {
-        TODO ("Not yet done")
-    }
-
 }

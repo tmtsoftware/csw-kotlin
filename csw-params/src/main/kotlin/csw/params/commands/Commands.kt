@@ -6,7 +6,7 @@ package csw.params.commands
 
 import arrow.core.Option
 import arrow.core.serialization.OptionSerializer
-import csw.params.codecs.TopParamSerializer
+import csw.params.codecs.ParamSerializer
 import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.params.keys.HasKey
@@ -60,7 +60,7 @@ data class Setup(
     @SerialName("maybeObsId")
     override val obsId: Option<ObsId>,
     @SerialName("paramSet")
-    override var parms: List<@Serializable(TopParamSerializer::class)HasKey> = emptyList()
+    override var parms: List<@Serializable(ParamSerializer::class)HasKey> = emptyList()
 ) : HasParms, ControlCommand {
     val _type: String = javaClass.simpleName
 

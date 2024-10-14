@@ -1,6 +1,8 @@
 package csw.params.core.models
 
 import csw.params.core.models.Angle.Companion.degree
+import csw.params.keys.CoordType
+import csw.params.keys.HasKey
 
 
 /**
@@ -28,7 +30,7 @@ enum class Tag(val value: String) {
 
     companion object {
         val names by lazy {
-            Tag.values().map { it.toString() }
+            Tag.entries.map { it.toString() }
         }
     }
 }
@@ -39,7 +41,7 @@ enum class EqFrame(val description: String) {
 
     companion object {
         val names by lazy {
-            EqFrame.values().map { it.toString() }
+            EqFrame.entries.map { it.toString() }
         }
     }
 }
@@ -48,11 +50,23 @@ enum class EqFrame(val description: String) {
  * All coordinates has a tag
  * A Coord has a tag.
  */
-sealed interface HasTag {
+sealed interface Coord {
     val tag: Tag
 }
 
-data class AltAzCoord(override val tag: Tag, val alt: Angle, val az: Angle) : HasTag {
+@JvmInline
+value class CatalogName(val name: String) {
+    override fun toString() = name
+}
+
+@JvmInline
+value class CatalogObject(val name: String) {
+    override fun toString(): String = name
+}
+
+data class CatalogCoord(override val tag: Tag, val catalogName: CatalogName, val catalogObject: CatalogObject) : Coord
+
+data class AltAzCoord(override val tag: Tag, val alt: Angle, val az: Angle) : Coord {
     override fun toString(): String = "AltAzCoord($tag ${alt.toDegree()}  ${az.toDegree()})"
 }
 
@@ -68,12 +82,12 @@ enum class SolarSystemObject {
 
     companion object {
         val names by lazy {
-            SolarSystemObject.values().map { it.toString() }
+            SolarSystemObject.entries.map { it.toString() }
         }
     }
 }
 
-data class SolarSystemCoord(override val tag: Tag, val body: SolarSystemObject) : HasTag
+data class SolarSystemCoord(override val tag: Tag, val body: SolarSystemObject) : Coord
 
 typealias EpochOfPerihelion = Double
 typealias Inclination = Angle
@@ -93,7 +107,7 @@ data class CometCoord(
     val argOfPerihelion: ArgOfPerihelion,     // degrees
     val perihelionDistance: PerihelionDistance, // AU
     val eccentricity: Eccentricity
-) : HasTag {
+) : Coord {
     override fun toString(): String =
         "CometCoord($tag,${epochOfPerihelion},${inclination.toDegree()},${longAscendingNode.toDegree()},${argOfPerihelion.toDegree()},${perihelionDistance},${eccentricity})"
 }
@@ -107,9 +121,7 @@ data class MinorPlanetCoord(
     val meanDistance: MeanDistance,     // AU
     val eccentricity: Eccentricity,
     val meanAnomaly: MeanAnomaly // degrees
-) : HasTag
-
-
+) : Coord
 
 /**
  * Equatorial coordinates.
@@ -128,7 +140,7 @@ data class EqCoord(
     val frame: EqFrame,
     val pm: ProperMotion,
     val catalogName: String
-    ) : HasTag {
+    ) : Coord {
 
     /**
      * Creates an EqCoord from the given arguments, which all have default values.
@@ -244,37 +256,3 @@ data class EqCoord(
         ): EqCoord = EqCoord(tag, ra, dec, frame, ProperMotion(pmx, pmy), catalogName)
     }
 }
-
-/**
- * For the Java API
- */
-object JCoords {
-    val ICRS: EqFrame = EqFrame.ICRS
-    val FK5: EqFrame = EqFrame.FK5
-
-    val DEFAULT_FRAME: EqFrame = ICRS
-    val DEFAULT_TAG: Tag = Tag.BASE
-    val DEFAULT_PMX: Double = ProperMotion.DEFAULT_PROPERMOTION.pmx
-    val DEFAULT_PMY: Double = ProperMotion.DEFAULT_PROPERMOTION.pmy
-    val DEFAULT_CATNAME: String = "none"
-
-    val Mercury: SolarSystemObject = SolarSystemObject.Mercury
-    val Venus: SolarSystemObject = SolarSystemObject.Venus
-    val Moon: SolarSystemObject = SolarSystemObject.Moon
-    val Mars: SolarSystemObject = SolarSystemObject.Mars
-    val Jupiter: SolarSystemObject = SolarSystemObject.Jupiter
-    val Saturn: SolarSystemObject = SolarSystemObject.Saturn
-    val Neptune: SolarSystemObject = SolarSystemObject.Neptune
-    val Uranus: SolarSystemObject = SolarSystemObject.Uranus
-    //val Pluto: SolarSystemObject   = SolarSystemObject.Pluto  // Pluto is not a planet!
-
-}
-/*
-object JEqCoord {
-def make(ra: Any, dec: Any): EqCoord = EqCoord(ra, dec)
-
-def asBoth(radec: String, frame: EqFrame, tag: Tag, catalogName: String, pmx: Double, pmy: Double): EqCoord =
-EqCoord.asBoth(radec, frame, tag, catalogName, pmx, pmy)
-}
-*/
-

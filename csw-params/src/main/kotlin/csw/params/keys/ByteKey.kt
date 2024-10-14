@@ -4,10 +4,11 @@ import arrow.core.None
 import arrow.core.Option
 import arrow.core.getOrElse
 import csw.params.commands.HasParms
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.*
 import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
-import kotlinx.serialization.encodeToByteArray
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlin.NoSuchElementException
 
 
