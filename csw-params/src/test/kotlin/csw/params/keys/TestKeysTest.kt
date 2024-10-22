@@ -13,7 +13,7 @@ class TestKeysTest: FunSpec( {
 
     val testP = Prefix("ESW.test")
 
-    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname, None)
+    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname)
 
     test("What does serialize look like") {
 

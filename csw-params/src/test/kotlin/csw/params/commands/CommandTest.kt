@@ -1,24 +1,22 @@
 package csw.params.commands
 
-import arrow.core.None
+import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.params.keys.*
 import csw.time.core.models.UTCTime
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.cbor.Cbor
-import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 
 @kotlinx.serialization.ExperimentalSerializationApi
 class CommandTests: FunSpec( {
     val testP = Prefix("ESW.test")
 
-    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname, None)
+    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname, ObsId.NullObsId)
 
     val key1 = IntegerKey("key1", Units.degree)
     val key2 = NumberKey("key2")

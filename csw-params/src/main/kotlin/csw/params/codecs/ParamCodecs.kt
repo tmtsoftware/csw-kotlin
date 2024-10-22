@@ -20,7 +20,7 @@ object ParamSerializer : KSerializer<HasKey> {
             is Qstore ->
                 when (value.stype) {
                     StoredType.INTEGER -> {
-                        val param = Param("LongKey", value.name, value.values.map { it.toLong() }.toList(), value.units)
+                        val param = Param("LongKey", value.name, value.data.map { it.toLong() }.toList(), value.units)
                         Param.serializer().serialize(encoder, param)
                     }
 
@@ -35,13 +35,13 @@ object ParamSerializer : KSerializer<HasKey> {
             is Sstore ->
                 when (value.stype) {
                     StoredType.STRING -> {
-                        val param = Param("StringKey", value.name, value.value.toList(), Units.NoUnits)
+                        val param = Param("StringKey", value.name, value.data.toList(), Units.NoUnits)
                         Param.serializer().serialize(encoder, param)
                     }
 
                     StoredType.BOOLEAN -> {
                         val param =
-                            Param("BooleanKey", value.name, value.value.map { it.toBoolean() }.toList(), Units.NoUnits)
+                            Param("BooleanKey", value.name, value.data.map { it.toBoolean() }.toList(), Units.NoUnits)
                         Param.serializer().serialize(encoder, param)
                     }
 
@@ -67,11 +67,16 @@ object ParamSerializer : KSerializer<HasKey> {
                 }
             }
 
-            is CoordContainer -> {
+            is ByteKey.ByteStore -> {
+                val param = Param("ByteKey", value.name, value.data.toList(), Units.NoUnits)
+                Param.serializer().serialize(encoder, param)
+            }
+
+            is Coordinates -> {
                 var cvalues = mutableListOf<CoordSurrogate>()
-                for (c in value.values) {
+                for (c in value.data) {
                     when (c.ctype) {
-                        CoordType.SSO -> cvalues.add(SolarSystemSurrogate(c.name, c.value))
+                        CoordType.SSO -> cvalues.add(SolarSystemSurrogate(c.name, c.data))
                         CoordType.EQ ->
                             EqCoordKey.decode(c)?.let {
                                 cvalues.add(
@@ -147,7 +152,7 @@ object ParamSerializer : KSerializer<HasKey> {
             "DoubleKey", "FloatKey" ->
                 Qstore(param.keyName, StoredType.NUMBER, param.values.map { it.toString() }.toTypedArray(), param.units)
 
-            "LongKey", "IntKey", "ShortKey", "ByteKey" ->
+            "LongKey", "IntKey", "ShortKey" ->
                 Qstore(
                     param.keyName,
                     StoredType.INTEGER,
@@ -169,6 +174,9 @@ object ParamSerializer : KSerializer<HasKey> {
 
             "UTCTimeKey" ->
                 TimeStore(param.keyName, TimeType.UTC, param.values.map { it.toString() }.toTypedArray())
+
+            "ByteKey" ->
+                ByteKey.ByteStore(param.keyName, ByteKey.StoreType.BYTE, param.values.map { it.toString().toByte() }.toByteArray() )
 
             "CoordKey" -> {
                 val coords = param.values.filterIsInstance<CoordSurrogate>()
@@ -232,7 +240,7 @@ object ParamSerializer : KSerializer<HasKey> {
                             )
                     }
                 }
-                CoordContainer(param.keyName, valsOut)
+                Coordinates(param.keyName, valsOut)
             }
 
             else -> throw SerializationException("Unknown key type during deserialization")
@@ -240,7 +248,6 @@ object ParamSerializer : KSerializer<HasKey> {
         return result
     }
 }
-
 
 @Serializable
 sealed interface CoordSurrogate
@@ -339,6 +346,8 @@ private data class ParamSurrogate(
     val tais: Value<String>? = null,
     @SerialName("UTCTimeKey")
     val utc: Value<String>? = null,
+    @SerialName("ByteKey")
+    val byte: Value<Byte>? = null,
 ) {
     @Serializable
     class Value<T>(
@@ -388,6 +397,8 @@ data class Param(
                     Pair(surrogate.tais, "TAITimeKey")
                 else if (surrogate.utc != null)
                     Pair(surrogate.utc, "UTCTimeKey")
+                else if (surrogate.byte != null)
+                    Pair(surrogate.byte, "ByteKey")
                 else throw SerializationException("Unknown Type")
 
             return Param(keyType, value.keyName, value.values, value.units)
@@ -471,9 +482,21 @@ data class Param(
                     encoder.encodeSerializableValue(
                         ParamSurrogate.serializer(),
                         ParamSurrogate(
-                            tais = ParamSurrogate.Value(
+                            utc = ParamSurrogate.Value(
                                 param.keyName,
                                 param.values.filterIsInstance<String>(),
+                                param.units
+                            )
+                        )
+                    )
+
+                "ByteKey" ->
+                    encoder.encodeSerializableValue(
+                        ParamSurrogate.serializer(),
+                        ParamSurrogate(
+                            byte = ParamSurrogate.Value(
+                                param.keyName,
+                                param.values.filterIsInstance<Byte>(),
                                 param.units
                             )
                         )

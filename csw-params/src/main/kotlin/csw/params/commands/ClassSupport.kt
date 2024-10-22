@@ -11,7 +11,7 @@ interface CommandInOut<C> {
 
     val commandName: CommandName
 
-    val obsId: Option<ObsId>
+    val obsId: ObsId?
 
     fun toStore(): Setup
 
@@ -26,7 +26,7 @@ enum class Selection(name: String) {
     A("A"), B("B"), C("C")
 }
 
-data class Command1(val keyName: String, val voltageIn: Double, val sel: Selection, override val obsId: Option<ObsId>): CommandInOut<Command1> {
+data class Command1(val keyName: String, val voltageIn: Double, val sel: Selection, override val obsId: ObsId?): CommandInOut<Command1> {
 
     override val sender = Prefix("ESW.test")
     override val commandName:CommandName = "testCommand"

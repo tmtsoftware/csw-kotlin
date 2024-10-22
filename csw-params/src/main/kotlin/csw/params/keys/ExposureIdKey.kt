@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
 enum class IdType { EXID, OBSID }
 
 @Serializable
-data class IdStore(override val name: Key, val idtype: IdType, val value: String): HasKey {
+data class IdStore(override val name: Key, val idtype: IdType, val data: String): HasKey {
     companion object {
         internal fun getStored(name: Key, target: HasParms): Option<IdStore> {
             val s: HasKey? = target.nget(name)
@@ -28,7 +28,7 @@ data class ExposureIdKey(override val name: Key): IsKey {
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
     fun get(target: HasParms): Option<ExposureId> =
-        IdStore.getStored(name, target).map { ExposureId(it.value) }
+        IdStore.getStored(name, target).map { ExposureId(it.data) }
 
     operator fun invoke(target: HasParms): ExposureId = get(target).getOrElse { throw NoSuchElementException("The key is missing from the parameter set.") }
 }
@@ -42,7 +42,7 @@ data class ObsIdKey(override val name: Key): IsKey {
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
     fun get(target: HasParms): Option<ObsId> =
-        IdStore.getStored(name, target).map { ObsId(it.value) }
+        IdStore.getStored(name, target).map { ObsId(it.data) }
 
     fun semesterId(target: HasParms):SemesterId = invoke(target).programId.semesterId
 

@@ -1,6 +1,5 @@
 package csw.params.keys
 
-import arrow.core.None
 import csw.params.commands.CommandName
 import csw.params.core.models.Prefix
 import csw.params.commands.Setup
@@ -14,7 +13,7 @@ class SimpleKeysTest: FunSpec ( {
 
     val testP = Prefix("ESW.test")
 
-    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname, None)
+    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname)
 
     test("Basic Number Tests") {
         val t1 = NumberKey("key1", Units.kilogram)
@@ -59,12 +58,12 @@ class SimpleKeysTest: FunSpec ( {
         badKey.isIn(s) shouldBe false
 
         // k1.key.get(s).onSome { it shouldBe Quantity(decodeValue(sencode(k1.value)), k1.key.units) }
-        k1.key.get(s).onSome { it shouldBe Quantity(r1.values, r1.units) }
-        k1.key(s) shouldBe Quantity(r1.values, r1.units)
+        k1.key.get(s) shouldBe Quantity(r1.data, r1.units)
+        k1.key(s) shouldBe Quantity(r1.data, r1.units)
 
         //k1.key.scalar(s) shouldBe Scalar(r1.values)
-        k1.key.head(s) shouldBe Scalar(r1.values).asDouble()
-        k1.key.value(s) shouldBe Scalar(r1.values).asDoubleArray()
+        k1.key.head(s) shouldBe Scalar(r1.data).asDouble()
+        k1.key.value(s) shouldBe Scalar(r1.data).asDoubleArray()
 
         val jsonOut = Json.encodeToString(s)
         println(jsonOut)
@@ -73,29 +72,29 @@ class SimpleKeysTest: FunSpec ( {
         println(sin)
         s shouldBe sin
 
-        k2.key.get(s).onSome { it shouldBe Quantity(r2.values, r2.units) }
-        k2.key(s) shouldBe Quantity(r2.values, r2.units)
+        k2.key.get(s) shouldBe Quantity(r2.data, r2.units)
+        k2.key(s) shouldBe Quantity(r2.data, r2.units)
 
         //k2.key.scalar(s) shouldBe Scalar(r2.values)
-        k2.key.head(s) shouldBe Scalar(r2.values).asDouble()
-        k2.key.value(s) shouldBe Scalar(r2.values).asDoubleArray()
+        k2.key.head(s) shouldBe Scalar(r2.data).asDouble()
+        k2.key.value(s) shouldBe Scalar(r2.data).asDoubleArray()
 
-        k3.key.get(s).onSome { it shouldBe Quantity(r3.values, r3.units) }
-        k3.key(s) shouldBe Quantity(r3.values, r3.units)
+        k3.key.get(s) shouldBe Quantity(r3.data, r3.units)
+        k3.key(s) shouldBe Quantity(r3.data, r3.units)
 
         //k3.key.scalar(s) shouldBe Scalar(r3.values)
-        k3.key.head(s) shouldBe Scalar(r3.values).asDouble()
-        k3.key.value(s) shouldBe Scalar(r3.values).asDoubleArray()
+        k3.key.head(s) shouldBe Scalar(r3.data).asDouble()
+        k3.key.value(s) shouldBe Scalar(r3.data).asDoubleArray()
 
         val xx = s.missingKeys(k1.key, k2.key, k3.key, k4.key, badKey)
         println("Diff: $xx")
 
-        k4.key.get(s).onSome { it shouldBe Quantity(r4.values, r4.units) }
-        k4.key(s) shouldBe Quantity(r4.values, r4.units)
+        k4.key.get(s) shouldBe Quantity(r4.data, r4.units)
+        k4.key(s) shouldBe Quantity(r4.data, r4.units)
 
         //k4.key.scalar(s) shouldBe Scalar(r4.values)
-        k4.key.head(s) shouldBe Scalar(r4.values).asDouble()
-        k4.key.value(s) shouldBe Scalar(r4.values).asDoubleArray()
+        k4.key.head(s) shouldBe Scalar(r4.data).asDouble()
+        k4.key.value(s) shouldBe Scalar(r4.data).asDoubleArray()
 
         shouldThrow<NoSuchElementException> {
             badKey(s)
@@ -133,37 +132,37 @@ class SimpleKeysTest: FunSpec ( {
         s.exists(badKey) shouldBe false
         badKey.isIn(s) shouldBe false
 
-        k1.key.get(s).onSome { it shouldBe Quantity(r1.values, r1.units) }
-        k1.key(s) shouldBe Quantity(r1.values, r1.units)
+        k1.key.get(s) shouldBe Quantity(r1.data, r1.units)
+        k1.key(s) shouldBe Quantity(r1.data, r1.units)
 
         //k1.key.scalar(s) shouldBe Scalar(r1.values)
-        k1.key.head(s) shouldBe Scalar(r1.values).asLong()
-        k1.key.value(s) shouldBe Scalar(r1.values).asLongArray()
+        k1.key.head(s) shouldBe Scalar(r1.data).asLong()
+        k1.key.value(s) shouldBe Scalar(r1.data).asLongArray()
 
         val jsonOut = Json.encodeToString(s)
         val sin = Json.decodeFromString<Setup>(jsonOut)
         s shouldBe sin
 
-        k2.key.get(s).onSome { it shouldBe Quantity(r2.values, r2.units) }
-        k2.key(s) shouldBe Quantity(r2.values, r2.units)
+        k2.key.get(s) shouldBe Quantity(r2.data, r2.units)
+        k2.key(s) shouldBe Quantity(r2.data, r2.units)
 
         //k2.key.scalar(s) shouldBe Scalar(r2.values)
-        k2.key.head(s) shouldBe Scalar(r2.values).asLong()
-        k2.key.value(s) shouldBe Scalar(r2.values).asLongArray()
+        k2.key.head(s) shouldBe Scalar(r2.data).asLong()
+        k2.key.value(s) shouldBe Scalar(r2.data).asLongArray()
 
-        k3.key.get(s).onSome { it shouldBe Quantity(r3.values, r3.units) }
-        k3.key(s) shouldBe Quantity(r3.values, r3.units)
+        k3.key.get(s) shouldBe Quantity(r3.data, r3.units)
+        k3.key(s) shouldBe Quantity(r3.data, r3.units)
 
         //k3.key.scalar(s) shouldBe Scalar(r3.values)
-        k3.key.head(s) shouldBe Scalar(r3.values).asLong()
-        k3.key.value(s) shouldBe Scalar(r3.values).asLongArray()
+        k3.key.head(s) shouldBe Scalar(r3.data).asLong()
+        k3.key.value(s) shouldBe Scalar(r3.data).asLongArray()
 
-        k4.key.get(s).onSome { it shouldBe Quantity(r4.values, r4.units) }
-        k4.key(s) shouldBe Quantity(r4.values, k4.key.units)
+        k4.key.get(s) shouldBe Quantity(r4.data, r4.units)
+        k4.key(s) shouldBe Quantity(r4.data, k4.key.units)
 
         //k4.key.scalar(s) shouldBe Scalar(r4.values)
-        k4.key.head(s) shouldBe Scalar(r4.values).asLong()
-        k4.key.value(s) shouldBe Scalar(r4.values).asLongArray()
+        k4.key.head(s) shouldBe Scalar(r4.data).asLong()
+        k4.key.value(s) shouldBe Scalar(r4.data).asLongArray()
 
         shouldThrow<NoSuchElementException> {
             badKey(s)
@@ -208,7 +207,7 @@ class SimpleKeysTest: FunSpec ( {
         badKey.isIn(s) shouldBe false
 
         // k1.key.get(s).onSome { it shouldBe Quantity(decodeValue(sencode(k1.value)), k1.key.units) }
-        k1.key.get(s).onSome { it shouldBe Scalar(k1.svalue()) }
+        k1.key.get(s) shouldBe Scalar(k1.svalue())
         k1.key(s) shouldBe Scalar(k1.svalue())
 
         k1.key.scalar(s) shouldBe Scalar(k1.svalue())
@@ -221,14 +220,14 @@ class SimpleKeysTest: FunSpec ( {
         println(sin)
         s shouldBe sin
 
-        k2.key.get(s).onSome { it shouldBe Scalar(k2.svalue()) }
+        k2.key.get(s) shouldBe Scalar(k2.svalue())
         k2.key(s) shouldBe Scalar(k2.svalue())
 
         k2.key.scalar(s) shouldBe Scalar(k2.svalue())
         k2.key.head(s) shouldBe k2.svalue()[0].toBoolean()
         k2.key.value(s) shouldBe k2.svalue().map { it.toBoolean() }.toTypedArray()
 
-        k3.key.get(s).onSome { it shouldBe Scalar(k3.svalue()) }
+        k3.key.get(s) shouldBe Scalar(k3.svalue())
         k3.key(s) shouldBe Scalar(k3.svalue())
 
         k3.key.scalar(s) shouldBe Scalar(k3.svalue())
@@ -238,8 +237,6 @@ class SimpleKeysTest: FunSpec ( {
         shouldThrow<NoSuchElementException> {
             badKey(s)
         }
-
-        val x = k3.key.value(s, 1)
     }
 
     test("full tests for StringKey") {
@@ -272,13 +269,13 @@ class SimpleKeysTest: FunSpec ( {
         badKey.isIn(s) shouldBe false
 
 //         k1.key.get(s).onSome { it shouldBe Quantity(decodeValue(sencode(k1.value)), k1.key.units) }
-        k1.key.get(s).onSome { it shouldBe Scalar(r1.values) }
+        k1.key.get(s) shouldBe Scalar(r1.data)
         println("s: $s")
-        k1.key(s) shouldBe Scalar(r1.values)
+        k1.key(s) shouldBe Scalar(r1.data)
 
-        k1.key.scalar(s) shouldBe Scalar(r1.values)
-        k1.key.head(s) shouldBe r1.values[0]
-        k1.key.value(s) shouldBe r1.values
+        k1.key.scalar(s) shouldBe Scalar(r1.data)
+        k1.key.head(s) shouldBe r1.data[0]
+        k1.key.value(s) shouldBe r1.data
 
         val jsonOut = Json.encodeToString(s)
         println(jsonOut)
@@ -286,12 +283,12 @@ class SimpleKeysTest: FunSpec ( {
         println(sin)
         s shouldBe sin
 
-        k2.key.get(s).onSome { it shouldBe Scalar(r2.values) }
-        k2.key(s) shouldBe Scalar(r2.values)
+        k2.key.get(s) shouldBe Scalar(r2.data)
+        k2.key(s) shouldBe Scalar(r2.data)
 
-        k2.key.scalar(s) shouldBe Scalar(r2.values)
-        k2.key.head(s) shouldBe r2.values[0]
-        k2.key.value(s) shouldBe r2.values
+        k2.key.scalar(s) shouldBe Scalar(r2.data)
+        k2.key.head(s) shouldBe r2.data[0]
+        k2.key.value(s) shouldBe r2.data
 
         shouldThrow<NoSuchElementException> {
             badKey(s)

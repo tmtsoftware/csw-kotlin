@@ -1,24 +1,17 @@
 package csw.params.keys
 
-import arrow.core.None
-import arrow.core.Option
-import arrow.core.getOrElse
-import arrow.core.toOption
 import csw.params.commands.HasParms
 import csw.time.core.models.TAITime
 import csw.time.core.models.TMTTime
 import csw.time.core.models.UTCTime
 import kotlinx.datetime.Instant
 import kotlinx.datetime.toKotlinInstant
-import kotlinx.serialization.Serializable
-import java.time.ZoneId
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 
 enum class TimeType { UTC, TAI }
 
-data class TimeStore(override val name: Key, val ttype: TimeType, val values: Array<String>) : HasKey {
-    val svalue: Array<String> get() = values
+data class TimeStore(override val name: Key, val ttype: TimeType, val data: Array<String>) : HasKey {
+    val svalue: Array<String> get() = data
     //fun toStringAsTimes(): String = TimeHelpers.instantsFromStrings(svalue).joinToString(",")
 
     override fun equals(other: Any?): Boolean {
@@ -27,14 +20,14 @@ data class TimeStore(override val name: Key, val ttype: TimeType, val values: Ar
         other as TimeStore
         if (name != other.name) return false
         if (ttype != other.ttype) return false
-        if (!values.contentEquals(other.values)) return false
+        if (!data.contentEquals(other.data)) return false
         return true
     }
 
     override fun hashCode(): Int {
         var result = name.hashCode()
         result = 31 * result + ttype.hashCode()
-        result = 31 * result + values.contentHashCode()
+        result = 31 * result + data.contentHashCode()
         return result
     }
 }
@@ -49,13 +42,13 @@ data class TAITimeKey(override val name: Key) : IsKey {
 
     fun show(target: HasParms): String = value(target).joinToString(",", "[", "]")
 
-    fun get(target: HasParms): Option<Array<TAITime>> {
+    fun get(target: HasParms): Array<TAITime>? {
         val s = KeyHelpers.getStored<TimeStore>(this, target)
-        return s?.let { s -> TimeHelpers.instantsFromStrings(s.svalue).map { TAITime(it) }.toTypedArray() }.toOption()
+        return s?.let { s -> TimeHelpers.instantsFromStrings(s.svalue).map { TAITime(it) }.toTypedArray() }
     }
 
     operator fun invoke(target: HasParms): Array<TAITime> =
-        get(target).getOrElse { throw NoSuchElementException("Setup doesn't have it") }
+        get(target) ?:  throw NoSuchElementException("Setup doesn't have it")
 
     fun value(s: HasParms): Array<TAITime> = invoke(s)
     fun head(s: HasParms): TAITime = invoke(s)[0]
@@ -75,15 +68,15 @@ data class UTCTimeKey(override val name: Key) : IsKey {
     fun contains(target: HasParms): Boolean = target.exists(this)
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
-    fun get(target: HasParms): Option<Array<UTCTime>> {
+    fun get(target: HasParms): Array<UTCTime>? {
         val s = KeyHelpers.getStored<TimeStore>(this, target)
-        return s?.let { s -> TimeHelpers.instantsFromStrings(s.svalue).map { UTCTime(it) }.toTypedArray() }.toOption()
+        return s?.let { s -> TimeHelpers.instantsFromStrings(s.svalue).map { UTCTime(it) }.toTypedArray() }
     }
 
     fun show(target: HasParms): String = value(target).joinToString(",", "[", "]")
 
     operator fun invoke(target: HasParms): Array<UTCTime> =
-        get(target).getOrElse { throw NoSuchElementException("Setup doesn't have it") }
+        get(target) ?: throw NoSuchElementException("Setup doesn't have it")
 
     fun value(s: HasParms): Array<UTCTime> = invoke(s)
     fun head(s: HasParms): UTCTime = invoke(s)[0]

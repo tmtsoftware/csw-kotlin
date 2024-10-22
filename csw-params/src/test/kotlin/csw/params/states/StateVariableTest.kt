@@ -47,7 +47,7 @@ class StateVariablesTest: DescribeSpec({
 
             //access Parameters
             val p1 = intKey.get(ds1)
-            p1.onSome { it.svalue shouldBe intParam.values }
+            p1?.svalue shouldBe intParam.data
 
             //access values
             val v1: Array<String> = stringKey.value(ds1)
@@ -104,7 +104,7 @@ class StateVariablesTest: DescribeSpec({
             //access Parameters
 
             val p1 = intKey.get(cs1)
-            p1.onSome { it.svalue shouldBe intParam.values }
+            p1?.svalue shouldBe intParam.data
 
             //access values
             val v1: Array<String> = stringKey.value(cs1)

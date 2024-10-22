@@ -1,22 +1,19 @@
 package csw.params.keys
 
-import arrow.core.None
-import arrow.core.Some
 import csw.params.commands.CommandName
 import csw.params.commands.Setup
 import csw.params.core.models.*
 import io.kotest.core.spec.style.FunSpec
 import csw.params.core.models.Angle.Companion.degree
-import io.kotest.matchers.equals.shouldBeEqual
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import io.kotest.matchers.types.shouldBeTypeOf
 
 class CoordKeyTest: FunSpec( {
 
     val testP = Prefix("ESW.test")
 
-    fun testS(p: Prefix = testP, cname: CommandName = "test"):Setup =  Setup(p, cname, None)
+    fun testS(p: Prefix = testP, cname: CommandName = "test"):Setup =  Setup(p, cname)
 
     /** EqCoord tests **/
 
@@ -59,14 +56,13 @@ class CoordKeyTest: FunSpec( {
         val k1 = EqCoordKey(Tag.BASE)
         val k2 = EqCoordKey(Tag.OIWFS1)
 
-        val s = testS()
-            .add(k1.set(180.0.degree(), 32.0.degree()), k2.set(180.43.degree(), 32.123.degree()))
+        val s = testS().add(k1.set(180.0.degree(), 32.0.degree()), k2.set(180.43.degree(), 32.123.degree()))
         s.size shouldBe 2
 
         assert(k1.isIn(s) && k2.isIn(s))
 
         val r1 = k1.get(s)
-        r1 shouldBe Some(EqCoord(180.0.degree(), 32.0.degree()))
+        r1 shouldBe EqCoord(180.0.degree(), 32.0.degree())
 
         val r2: EqCoord = k1(s)
         r2 shouldBe EqCoord(180.0.degree(), 32.0.degree())
@@ -81,8 +77,7 @@ class CoordKeyTest: FunSpec( {
         assert(k1.isIn(s))
 
         val r1 = k1.get(s)
-        r1.onSome { it shouldBe EqCoord(Tag.BASE, 180.0.degree(), 32.0.degree(), EqFrame.ICRS, ProperMotion(1.12, -1.344), "none") }
-
+        r1 shouldBe EqCoord(Tag.BASE, 180.0.degree(), 32.0.degree(), EqFrame.ICRS, ProperMotion(1.12, -1.344), "none")
     }
 
     /** CatalogCoordKey tests **/
@@ -106,7 +101,7 @@ class CoordKeyTest: FunSpec( {
         assert(k1.isIn(s))
 
         val r1 = k1.get(s)
-        r1.onSome { it shouldBe CatalogCoord(Tag.BASE, catalogName, objectName) }
+        r1 shouldBe CatalogCoord(Tag.BASE, catalogName, objectName)
 
         val r2 = k1(s)
         r2 shouldBe CatalogCoord(Tag.BASE, catalogName, objectName)
@@ -160,7 +155,7 @@ class CoordKeyTest: FunSpec( {
         assert(k1.isIn(s) && k2.isIn(s))
 
         val r1 = k1.get(s)
-        r1 shouldBe Some(AltAzCoord(Tag.BASE, 32.0.degree(), 190.2.degree()))
+        r1 shouldBe AltAzCoord(Tag.BASE, 32.0.degree(), 190.2.degree())
 
         val r2: AltAzCoord = k1(s)
         r2 shouldBe AltAzCoord(Tag.BASE, 32.0.degree(), 190.2.degree())
@@ -211,7 +206,7 @@ class CoordKeyTest: FunSpec( {
         assert(k1.isIn(s) && k2.isIn(s))
 
         val r1 = k1.get(s)
-        r1 shouldBe Some(SolarSystemCoord(Tag.BASE, SolarSystemObject.Saturn))
+        r1 shouldBe SolarSystemCoord(Tag.BASE, SolarSystemObject.Saturn)
 
         val r2 = k2(s)
         r2 shouldBe SolarSystemCoord(Tag.OIWFS1, SolarSystemObject.Uranus)
@@ -289,7 +284,7 @@ class CoordKeyTest: FunSpec( {
         assert(k1.isIn(s) && k2.isIn(s))
 
         val r1 = k1.get(s)
-        r1 shouldBe Some(CometCoord(Tag.BASE, epoch, inclination, longAscendingNode, argOfPerihelion, perihelionDistance, eccentricity))
+        r1 shouldBe CometCoord(Tag.BASE, epoch, inclination, longAscendingNode, argOfPerihelion, perihelionDistance, eccentricity)
 
         val r2 = k2(s)
         r2 shouldBe CometCoord(Tag.OIWFS1, epoch2, inclination2, longAscendingNode2, argOfPerihelion2, perihelionDistance2, eccentricity2)
@@ -369,47 +364,47 @@ class CoordKeyTest: FunSpec( {
         assert(k1.isIn(s) && k2.isIn(s))
 
         val r1 = k1.get(s)
-        r1 shouldBe Some(MinorPlanetCoord(Tag.BASE, epoch, inclination, longAscendingNode, argOfPerihelion, meanDistance, eccentricity, meanA))
+        r1 shouldBe MinorPlanetCoord(Tag.BASE, epoch, inclination, longAscendingNode, argOfPerihelion, meanDistance, eccentricity, meanA)
 
         val r2 = k2(s)
         r2 shouldBe MinorPlanetCoord(Tag.OIWFS1, epoch2, inclination2, longAscendingNode2, argOfPerihelion2, meanDistance2, eccentricity2, meanA2)
     }
 
-    test("Coord Key 2 with multiples") {
+    test("Coord Key different Coords") {
         val c1 = CoordKey("Coords")
         val k1 = SolarSystemCoordKey(Tag.BASE)
         val k2 = EqCoordKey(Tag.OIWFS1)
+        val k3 = CometCoordKey(Tag.BASE)
 
-        val ra = 180.0.degree()
-        val dec = 32.0.degree()
+        val xra = 190.0.degree()
+        val xdec = 32.0.degree()
 
-        val cc1 = SolarSystemCoord(Tag.BASE, SolarSystemObject.Jupiter)
-        val cc2 = EqCoord(Tag.OIWFS1, ra, dec, EqFrame.ICRS, ProperMotion.DEFAULT_PROPERMOTION, "none" )
+        val s = testS().add(c1.set(k1.set(SolarSystemObject.Jupiter), k2.set(xra, xdec)))
+        s.size shouldBe 1
 
+        assert(c1.isIn(s))
+        (k3 in s) shouldBe false
 
+        val out1 = c1.get(s)
+        out1?.size shouldBe 2
+        out1?.tags shouldContainExactlyInAnyOrder listOf(Tag.BASE, Tag.OIWFS1)
+        out1?.tags?.contains(Tag.BASE) shouldBe true
 
-        var s = testS().add(c1.set(k1.set(SolarSystemObject.Jupiter)))
-        //s.size shouldBe 2
+        out1?.tag(Tag.BASE).shouldBeTypeOf<SolarSystemCoord>()
+        out1?.tag(Tag.OIWFS1).shouldBeTypeOf<EqCoord>()
 
-        //assert(k1.isIn(s) && k2.isIn(s))
-        println("s: $s")
+        val out2 = c1.tag(s, Tag.BASE)
+        out2.shouldBeTypeOf<SolarSystemCoord>()
 
-        //val out1 = c1.get(s)
-        //println("out1: $out1")
-
-        //val out2 = c1.tag(s, Tag.BASE)
-        //println("out2: $out2")
-/*
-        val out3 = c1.tag(s, Tag.OIWFS1) as EqCoord
-        println("out3: $out3")
-        with (out3) {
-            println("ra: $ra")
-            println("dec: $dec")
+        val out3 = c1.tag(s, Tag.OIWFS1)
+        when(out3) {
+            is EqCoord -> {
+                out3.ra shouldBe xra
+                out3.dec shouldBe xdec
+            }
+            is SolarSystemCoord -> println("Solar body: ${out3.body}")
+            else -> println("Not: $out3")
         }
-*/
-        val jsonOut = Json.encodeToString(s)
-        println(jsonOut)
-
     }
 }
 )

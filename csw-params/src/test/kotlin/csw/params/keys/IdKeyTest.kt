@@ -1,6 +1,5 @@
 package csw.params.keys
 
-import arrow.core.None
 import csw.params.commands.CommandName
 import csw.params.core.models.Prefix
 import csw.params.commands.Setup
@@ -12,7 +11,7 @@ class IdKeyTest: FunSpec( {
 
     val testP = Prefix("ESW.test")
 
-    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname, None)
+    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname)
 
 
     test("Create a new ExposureId Key") {

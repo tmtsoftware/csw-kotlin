@@ -39,7 +39,7 @@ class KeyTest: DescribeSpec({
 
         it("should allow single val | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196") {
             val ii = bk.set(tval)
-            ii.value shouldBe arrayOf("false")
+            ii.data shouldBe arrayOf("false")
         }
 
         val listIn = listOf(false, true)
@@ -48,8 +48,8 @@ class KeyTest: DescribeSpec({
         // DEOPSCSW-190: Implement Unit Support
         it("should work with list, withUnits | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196, DEOPSCSW-190") {
             val ii = bk.set(listIn.toBooleanArray())
-            ii.value[1] shouldBe listOut[1]
-            ii.value shouldBe listOut.toTypedArray()
+            ii.data[1] shouldBe listOut[1]
+            ii.data shouldBe listOut.toTypedArray()
         }
     }
 
@@ -94,7 +94,7 @@ class KeyTest: DescribeSpec({
             val li = lk.set(tval)
             with (li) {
                 units shouldBe Units.encoder
-                values shouldBe arrayOf("123")
+                data shouldBe arrayOf("123")
                 asDoubles shouldBe arrayOf(123.0)
             }
         }
@@ -260,9 +260,9 @@ class KeyTest: DescribeSpec({
 
         it("should allow single val | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196") {
             val li = lk.set(tval)
-            println("out: ${li.values.toList()}")
+            println("out: ${li.data.toList()}")
 
-            li.values shouldBe tout
+            li.data shouldBe tout
             li.asDoubles shouldBe arrayOf(1234.0)
         }
 
@@ -274,15 +274,15 @@ class KeyTest: DescribeSpec({
             val li = lk.set(listIn)
 
             li.units shouldBe Units.encoder
-            li.values[0] shouldBe listOut[0]
-            li.values[1] shouldBe listOut[1]
+            li.data[0] shouldBe listOut[0]
+            li.data[1] shouldBe listOut[1]
             li.asDoubles shouldBe listIn.map { it.toDouble() }.toDoubleArray()
         }
 
         it("should work with list | DEOPSCSW-183, DEOPSCSW-185, DEOPSCSW-188, DEOPSCSW-184, DEOPSCSW-196") {
             val li = lk.set(listIn)
             li.units shouldBe Units.encoder
-            li.values[1] shouldBe listOut[1]
+            li.data[1] shouldBe listOut[1]
             li.asDoubles shouldBe listIn.map { it.toDouble() }.toDoubleArray()
         }
     }

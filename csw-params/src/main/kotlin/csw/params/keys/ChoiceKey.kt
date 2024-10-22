@@ -56,14 +56,12 @@ data class ChoiceKey(override val name: String, val choices: Choices, val units:
         return ChoiceStore(name, KeyHelpers.aencode(all.values.toTypedArray()), units)
     }
 
-    fun get(target: HasParms): Option<Choices> {
-        val s: HasKey? = target.nget(name)
-        return if (s is ChoiceStore) Some(Choices.fromChoices(*s.choice)) else None
-    }
+    fun get(target: HasParms): Choices? =
+        KeyHelpers.getStored<ChoiceStore>(this, target)?.let {Choices.fromChoices(*it.choice) }
 
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
-    operator fun invoke(target: HasParms): Choices = get(target).getOrElse { throw NoSuchElementException("The key is missing from the command.") }
+    operator fun invoke(target: HasParms): Choices = get(target) ?: throw NoSuchElementException("The key is missing from the command.")
     fun value(target: HasParms): Choices = invoke(target)
     fun choices(target: HasParms): Choices = invoke(target)
 

@@ -34,6 +34,8 @@ data class ObsId(val programId: ProgramId, val observationNumber: Int) {
     override fun toString(): String = "$programId-${String.format("%03d", observationNumber)}"
 
     companion object {
+        val NullObsId: ObsId? = null
+
         private fun isNumeric(toCheck: String): Boolean = toCheck.all { char -> char.isDigit() }
 
         private val mess =

@@ -1,7 +1,5 @@
 package csw.params.keys
 
-import arrow.core.None
-import arrow.core.none
 import csw.params.commands.CommandName
 import csw.params.commands.Setup
 import csw.params.core.models.Prefix
@@ -17,7 +15,7 @@ class TimeKeyTests: FunSpec( {
 
     val testP = Prefix("ESW.test")
 
-    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname, None)
+    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname)
 
     fun timeNow(): Instant {
         val now = Clock.System.now()
@@ -36,8 +34,8 @@ class TimeKeyTests: FunSpec( {
         val testIStr = testI.toString()
 
         val t1 = key1.set(UTCTime(testI))
-        t1.values.size shouldBe 1
-        t1.values[0] shouldBe testIStr
+        t1.data.size shouldBe 1
+        t1.data[0] shouldBe testIStr
     }
 
     test("Basic TAITime Key Tests") {
@@ -49,8 +47,8 @@ class TimeKeyTests: FunSpec( {
         val testIStr = testI.toString()
 
         val t1 = key1.set(TAITime(testI))
-        t1.values.size shouldBe 1
-        t1.values[0] shouldBe testIStr
+        t1.data.size shouldBe 1
+        t1.data[0] shouldBe testIStr
     }
 
     test("Add to setup") {
@@ -67,7 +65,7 @@ class TimeKeyTests: FunSpec( {
         assert(key1.isIn(s))
 
         val bad = key2.get(s)
-        bad shouldBe None
+        bad shouldBe null
 
         val r1 = key1(s)
         r1.size shouldBe 1
@@ -85,9 +83,9 @@ class TimeKeyTests: FunSpec( {
         s = s.add(key1.set(UTCTime.now(), UTCTime.now()), key2.set(TAITime.now()))
         s.size shouldBe 2
 
-        key1.get(s).onSome { it.size shouldBe 2 }
-        key2.get(s).onSome { it.size shouldBe 1 }
-        key3.get(s) shouldBe none()
+        key1.get(s)?.size shouldBe 2
+        key2.get(s)?.size shouldBe 1
+        key3.get(s) shouldBe null
     }
 }
 )

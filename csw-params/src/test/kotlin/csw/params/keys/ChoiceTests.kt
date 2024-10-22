@@ -1,6 +1,5 @@
 package csw.params.keys
 
-import arrow.core.None
 import csw.params.commands.CommandName
 import csw.params.core.models.Prefix
 import csw.params.commands.Setup
@@ -14,7 +13,7 @@ class ChoiceTests : FunSpec({
 
     val testP = Prefix("ESW.test")
 
-    fun testS(p: Prefix = testP, cname: CommandName = "test"):Setup =  Setup(p, cname, None)
+    fun testS(p: Prefix = testP, cname: CommandName = "test"):Setup =  Setup(p, cname)
 
     test("Basic ChioceKey tests") {
         val c1 = Choices("A", "B", "C")
@@ -29,7 +28,7 @@ class ChoiceTests : FunSpec({
         s.size shouldBe 1
 
         val r1 = key1.get(s)
-        r1.onSome { it shouldBe Choices("B", "C") }
+        r1 shouldBe Choices("B", "C")
 
         key1.choice(s) shouldBe "B"
         key1.choices(s) shouldBe Choices("B", "C")
@@ -51,10 +50,10 @@ class ChoiceTests : FunSpec({
         s.size shouldBe 2
 
         val r1 = key1.get(s)
-        r1.onSome { it shouldBe Choices("B","C") }
+        r1 shouldBe Choices("B","C")
 
         val r2 = key2.get(s)
-        r2.onSome { it shouldBe Choices("CC") }
+        r2 shouldBe Choices("CC")
     }
 
     test("Reject choice not in choiceset") {

@@ -59,7 +59,7 @@ class CommandsTest: DescribeSpec({
             val i2: HasKey = k2.set("A")
 
             //create Setup, add sequentially using add
-            val sc1: Setup = Setup(prefix, "move", Some(obsId)).add(i1).add(i2)
+            val sc1: Setup = Setup(prefix, "move", obsId).add(i1).add(i2)
 
             //access keys
             val k1Exists: Boolean = sc1.exists(k1) //true
@@ -83,7 +83,7 @@ class CommandsTest: DescribeSpec({
             val b1: HasKey = byteKey1.set(bytes1)
             val b2: HasKey = byteKey2.set(bytes2)
 
-            val sc3: Setup = Setup(prefix, "move", Some(obsId), listOf(b1, b2))
+            val sc3: Setup = Setup(prefix, "move", obsId, listOf(b1, b2))
 
             //remove a key
             val sc4: Setup = sc3.remove(byteKey1)

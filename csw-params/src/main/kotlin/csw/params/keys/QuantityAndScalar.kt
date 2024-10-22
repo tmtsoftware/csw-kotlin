@@ -38,7 +38,7 @@ data class Scalar(val value: Array<String>) {
 
     companion object {
         fun create(sstore: Sstore): Scalar {
-            return Scalar(sstore.value)
+            return Scalar(sstore.data)
         }
     }
 }

@@ -29,7 +29,7 @@ interface HasParms {
 
     fun nget(name: Key): HasKey? = parms.firstOrNull { it.name == name }
 
-    fun get(name: Key): Option<HasKey> = nget(name).toOption()
+    //fun get(name: Key): Option<HasKey> = nget(name).toOption()
 
     /*
      * Adds all items to current, replacing if item already exists in current

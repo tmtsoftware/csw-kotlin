@@ -1,6 +1,7 @@
 package csw.params.commands
 
 import arrow.core.None
+import csw.params.core.models.ObsId
 import csw.params.core.models.Prefix
 import csw.params.core.models.Subsystem
 import io.kotest.core.spec.style.FunSpec
@@ -9,18 +10,18 @@ import io.kotest.matchers.shouldBe
 
 class PrefixDataFiltersTest: FunSpec( {
 
-    val s1 = Setup(Prefix("ESW.seq"), "setup1", None )
-    val s2 = Setup(Prefix("ESW.seq"), "setup2", None )
-    val s3 = Setup(Prefix("TCS.point"), "setup3", None )
-    val s4 = Setup(Prefix("IRIS.seq"), "setup4", None )
+    val s1 = Setup(Prefix("ESW.seq"), "setup1" )
+    val s2 = Setup(Prefix("ESW.seq"), "setup2" )
+    val s3 = Setup(Prefix("TCS.point"), "setup3" )
+    val s4 = Setup(Prefix("IRIS.seq"), "setup4")
 
-    val o1 = Observe(Prefix("IRIS.det"), "observe1", None )
-    val o2 = Observe(Prefix("IRIS.det"), "observe2", None )
-    val o3 = Observe(Prefix("WFOS.blue.det"), "observe3", None )
-    val o4 = Observe(Prefix("WFOS.red.det"), "observe4", None )
+    val o1 = Observe(Prefix("IRIS.det"), "observe1")
+    val o2 = Observe(Prefix("IRIS.det"), "observe2")
+    val o3 = Observe(Prefix("WFOS.blue.det"), "observe3")
+    val o4 = Observe(Prefix("WFOS.red.det"), "observe4")
 
-    val w1 = Wait(Prefix("ESW.seq"), "wait1", None)
-    val w2 = Wait(Prefix("IRIS.seq"), "wait2", None)
+    val w1 = Wait(Prefix("ESW.seq"), "wait1")
+    val w2 = Wait(Prefix("IRIS.seq"), "wait2")
 
     val seqCommands = listOf(s1, s2, s3, s4, o1, o2, o3, o4, w1, w2)
 

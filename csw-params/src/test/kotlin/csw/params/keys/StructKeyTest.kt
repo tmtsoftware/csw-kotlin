@@ -10,7 +10,7 @@ import io.kotest.core.spec.style.FunSpec
 class StructKeyTest: FunSpec( {
     val testP = Prefix("ESW.test")
 
-    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname, None)
+    fun testS(p: Prefix = testP, cname: CommandName = "test"): Setup =  Setup(p, cname)
 
     val sk1 = IntegerKey("sk1")
     val sk2 = IntegerKey("sk2", Units.degC)
@@ -36,12 +36,14 @@ class StructKeyTest: FunSpec( {
 
         s = s.add(st1.add(sk1.set(2, 3), sk4.set("B")), sk2.set(1000))
         println("s: $s")
-
+/*
         val y = st1.get(s, sk4.name).map { sk4.get(it) }.flatten()
         println("y: $y")
 
         val z = sk1.get2(s, st1)
         println("z: $z")
+
+ */
     }
 }
 )

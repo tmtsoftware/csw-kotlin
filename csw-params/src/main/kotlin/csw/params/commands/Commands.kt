@@ -39,7 +39,7 @@ sealed interface Command: PrefixData {
     /**
      * An optional obsId for command
      */
-    val obsId: Option<ObsId>
+    val obsId: ObsId?
 }
 
 
@@ -58,7 +58,7 @@ data class Setup(
     override val source: Prefix,
     override val commandName: CommandName,
     @SerialName("maybeObsId")
-    override val obsId: Option<ObsId>,
+    override val obsId: ObsId? = ObsId.NullObsId,
     @SerialName("paramSet")
     override var parms: List<@Serializable(ParamSerializer::class)HasKey> = emptyList()
 ) : HasParms, ControlCommand {
@@ -97,7 +97,7 @@ data class Setup(
 data class Observe(
     override val source: Prefix,
     override val commandName: CommandName,
-    override val obsId: Option<ObsId>,
+    override val obsId: ObsId? = ObsId.NullObsId,
     override var parms: List<HasKey> = emptyList()
 ) : HasParms, ControlCommand {
 
@@ -133,7 +133,7 @@ data class Observe(
 data class Wait(
     override val source: Prefix,
     override val commandName: CommandName,
-    override val obsId: Option<ObsId>,
+    override val obsId: ObsId? = ObsId.NullObsId,
     override var parms: List<HasKey> = emptyList()
 ) : HasParms, SequenceCommand {
 

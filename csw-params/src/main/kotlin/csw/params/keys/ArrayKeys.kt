@@ -53,7 +53,7 @@ data class NumberArrayKey(override val name: Key, val units: Units = Units.NoUni
     }
 }
 
-@Serializable
+
 data class DoubleArrayKey(override val name: Key, val units: Units = Units.NoUnits): IsKey {
 
     @Serializable

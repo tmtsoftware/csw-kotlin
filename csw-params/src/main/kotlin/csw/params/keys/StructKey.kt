@@ -8,10 +8,8 @@ import csw.params.commands.HasParms
 data class Struct(override val name: Key, override var parms: List<HasKey>): HasParms, HasKey {
 
     companion object {
-        internal fun getStored(name: Key, target: HasParms): Option<Struct> {
-            val s: HasKey? = target.nget(name)
-            return if (s is Struct) Option(s) else None
-        }
+        internal fun getStored(name: Key, target: HasParms): Struct? =
+            target.nget(name) as Struct?
     }
 
 }
@@ -45,13 +43,8 @@ class StructKey private constructor(override val name: Key, val keys: List<IsKey
         return s
     }
 
-    fun get(target: HasParms, sname: Key): Option<Struct> {
-        val x = Struct.getStored(name, target)
-        println("X: $x")
-        return x
-    }
-
-
+    fun get(target: HasParms, sname: Key): Struct? =
+        Struct.getStored(name, target)
 
 
 

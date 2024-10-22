@@ -179,6 +179,60 @@ class ParmCodecsTest : FunSpec({
         objIn shouldBe st1
     }
 
+    test("UTCKey CSW TopLevelSerializer") {
+        val key1 = UTCTimeKey("key1name")
+
+        val now = Clock.System.now()
+
+        val ss = now.epochSeconds
+        val nn = now.nanosecondsOfSecond
+        val testI = Instant.fromEpochSeconds(ss, nn)
+        val testStr = testI.toString()
+
+        val st1 = key1.set(UTCTime(testI))
+
+        val jout = parmFormat.encodeToString(ParamSerializer, st1)
+        val expected = """
+            {
+            "UTCTimeKey" : {
+              "keyName" : "key1name",
+              "values" : [ "$testStr" ],
+              "units" : "utc"
+            }
+          }
+        """.trimIndent()
+        jout shouldEqualJson expected
+
+        val objIn = parmFormat.decodeFromString(ParamSerializer, jout)
+        objIn shouldBe st1
+    }
+
+    val bytes1 = "sensor image".toByteArray()
+
+    test("Byte Key Tets") {
+        val key1 = ByteKey("key1")
+
+        val st1 = key1.set(bytes1)
+        val jout = parmFormat.encodeToString(ParamSerializer, st1)
+        println("jout: $jout")
+        val expected = """
+            {
+            "ByteKey": {
+                "keyName": "key1",
+                "values": [
+                    115, 101, 110, 115, 111, 114, 32, 105, 109, 97, 103, 101
+                    ],
+                "units": "NoUnits"
+               }
+            }
+        """.trimIndent()
+        jout shouldEqualJson expected
+
+        val objIn = parmFormat.decodeFromString(ParamSerializer, jout)
+        objIn shouldBe st1
+    }
+
+
     test("CoordKey Tests") {
         val c1 = CoordKey("Coords")
         val k1 = SolarSystemCoordKey(Tag.BASE)
@@ -198,7 +252,7 @@ class ParmCodecsTest : FunSpec({
         val k3 = AltAzCoordKey(Tag.BASE)
         val st3 = c1.set(k3.set(alt, az))
         val jout3 = parmFormat.encodeToString(ParamSerializer, st3)
-        val objin3 = parmFormat.decodeFromString<HasKey>(ParamSerializer, jout3)
+        val objin3 = parmFormat.decodeFromString(ParamSerializer, jout3)
         objin3 shouldBe st3
 
         val epoch = 2035.2
