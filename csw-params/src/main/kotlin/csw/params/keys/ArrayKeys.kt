@@ -1,85 +1,161 @@
 package csw.params.keys
 
-import arrow.core.*
 import csw.params.commands.HasParms
-import csw.params.core.models.ArrayData
+import csw.params.keys.KeyHelpers.toDoubleArray
+import csw.params.keys.KeyHelpers.toLongArray
 import kotlinx.serialization.Serializable
 
-@Serializable
-data class ArStore(override val name: Key, val value: String, val units: Units = Units.NoUnits) : HasKey {
-    val values: Array<ArrayData>
-        get() = KeyHelpers.decodeArrayValue(value)
-    val svalues: Array<ArrayData>
-        get() = KeyHelpers.decodeArrayValue(value)
-
-    companion object {
-        internal fun getStored(name: Key, target: HasParms): Option<ArStore> {
-            val s: HasKey? = target.nget(name)
-            return if (s is ArStore) Option(s) else None
-        }
-    }
-}
-
+interface ArrayStorage
 
 data class NumberArrayKey(override val name: Key, val units: Units = Units.NoUnits): IsKey {
+    enum class StoreType { DOUBLE, FLOAT }
 
-    fun set(value: ArrayData, vararg values: ArrayData): ArStore {
-        val valueList = (arrayOf(value) + values).toList()
-        val result = ArStore(name, KeyHelpers.arrayencode(valueList), units)
+    @Serializable
+    data class NAStore(override val name: Key, val storeType: StoreType, val units: Units, val data: Array<DoubleArray>): HasKey, ArrayStorage {
 
-        return result
+        override fun toString(): String =
+            "NAStore($name, $storeType, $units, ${data.contentDeepToString()})"
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            other as NAStore
+            if (name != other.name) return false
+            if (units != other.units) return false
+            if (!data.contentDeepEquals(other.data)) return false
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = name.hashCode()
+            result = 31 * result + units.hashCode()
+            result = 31 * result + data.contentHashCode()
+            return result
+        }
     }
+
+    fun set(value: DoubleArray, vararg values: DoubleArray): NAStore =
+        NAStore(name, StoreType.DOUBLE, units, arrayOf(value, *values))
+
+    fun set(value: FloatArray, vararg values: FloatArray): NAStore =
+        NAStore(name, StoreType.FLOAT, units, listOf(value, *values).map { it.toDoubleArray() }.toTypedArray())
 
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
-    fun get(target: HasParms): Array<ArrayData> { //Option<Quantity> =
-        val x = ArStore.getStored(name, target)
-        val y = x.getOrElse { throw NoSuchElementException("The command does not have the key: \"$name\"") }
-        return y.values
-    }
-/*
-    fun scalar(target: HasParms): Scalar {
-        val q = get(target).getOrElse { throw NoSuchElementException("The command does not have the key: \"$name\"") }
-        return Scalar(q.svalues)
-    }
-*/
-  //  operator fun invoke(target: HasParms): Quantity = get(target).getOrElse { throw NoSuchElementException("Setup doesn't have it") }
-//    fun value(s: HasParms): DoubleArray = invoke(s).asDoubleArray()
-//    fun head(s: HasParms): Double = invoke(s).asDoubleArray().elementAt(0)
+    fun get(target: HasParms): Array<DoubleArray>? = KeyHelpers.getStored<NAStore>(this, target)?.data
+    fun get(target: HasParms, row: Int): DoubleArray? =
+        get(target)?.let {
+            if (row < 0 || row >= it.size) null else it[row]
+        }
+
+    fun get(target: HasParms, row: Int, col: Int): Double? =
+        get(target, row)?.let {
+            if (col < 0 || col >= it.size) return null else it[col]
+        }
+
+    operator fun invoke(target: HasParms): Array<DoubleArray> = get(target) ?: throw NoSuchElementException("The value is not present")
+    fun value(s: HasParms): Array<DoubleArray> = invoke(s)
+    fun valueAt(s: HasParms, index: Int): DoubleArray = invoke(s)[index]
+    fun head(s: HasParms): DoubleArray = valueAt(s, 0)
+    fun item(s: HasParms, i: Int, j: Int): Double = valueAt(s, i)[j]
 
     // For compatibility
     companion object {
-  //      fun make(name: Key, units: Units = Units.NoUnits): NumberKey = NumberKey(name, units)
+        fun make(name: Key, units: Units = Units.NoUnits): NumberArrayKey = NumberArrayKey(name, units)
     }
 }
 
 
-data class DoubleArrayKey(override val name: Key, val units: Units = Units.NoUnits): IsKey {
+
+data class IntegerArrayKey(override val name: Key, val units: Units = Units.NoUnits): IsKey {
+    enum class StoreType { SHORT, INT, LONG }
 
     @Serializable
-    data class DAStore(override val name: Key, val units: Units, val value: DoubleArray): HasKey {
-        companion object {
-            internal fun getStored(name: Key, target: HasParms): Option<DAStore> {
-                val s: HasKey? = target.nget(name)
-                return if (s is DAStore) Option(s) else None
-            }
+    data class IAStore(override val name: Key,
+                       val storeType: StoreType, val units: Units, val data: Array<LongArray>): HasKey, ArrayStorage {
+
+        override fun toString(): String =
+            "IAStore($name, $storeType, $units, ${data.contentDeepToString()})"
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+            other as IAStore
+            if (name != other.name) return false
+            if (units != other.units) return false
+            if (!data.contentDeepEquals(other.data)) return false
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result = name.hashCode()
+            result = 31 * result + units.hashCode()
+            result = 31 * result + data.contentHashCode()
+            return result
         }
     }
 
-    fun set(value: DoubleArray): DAStore = DAStore(name, units, value)
+    fun set(value: ShortArray, vararg values: ShortArray): IAStore =
+        IAStore(name, StoreType.SHORT, units, listOf(value, *values).map { it.toLongArray() }.toTypedArray())
+
+    fun set(value: IntArray, vararg values: IntArray): IAStore =
+        IAStore(name, StoreType.INT, units, listOf(value, *values).map { it.toLongArray() }.toTypedArray())
+
+    fun set(value: LongArray, vararg values: LongArray): IAStore =
+        IAStore(name, StoreType.LONG, units, arrayOf(value, *values))
 
     fun isIn(target: HasParms): Boolean = target.exists(this)
 
-    fun get(target: HasParms): Option<DoubleArray> =
-        DAStore.getStored(name, target).map { it.value }
+    fun get(target: HasParms): Array<LongArray>? = KeyHelpers.getStored<IAStore>(this, target)?.data
+    fun get(target: HasParms, row: Int): LongArray? =
+        get(target)?.let {
+            if (row < 0 || row >= it.size) null else it[row]
+        }
 
+    fun get(target: HasParms, row: Int, col: Int): Long? =
+        get(target, row)?.let {
+            if (col < 0 || col >= it.size) return null else it[col]
+        }
 
-    operator fun invoke(target: HasParms): DoubleArray = get(target).getOrElse { throw NoSuchElementException("Setup doesn't have it") }
-    fun value(s: HasParms): DoubleArray = invoke(s)
-    fun head(s: HasParms): Double = invoke(s).elementAt(0)
+    operator fun invoke(target: HasParms): Array<LongArray> = get(target) ?: throw NoSuchElementException("Setup doesn't have it")
+    fun value(s: HasParms): Array<LongArray> = invoke(s)
+    fun valueAt(s: HasParms, index: Int): LongArray = invoke(s)[index]
+    fun head(s: HasParms): LongArray = valueAt(s, 0)
+    fun item(s: HasParms, i: Int, j: Int): Long = valueAt(s, i)[j]
 
     // For compatibility
     companion object {
-        //      fun make(name: Key, units: Units = Units.NoUnits): NumberKey = NumberKey(name, units)
+        fun make(name: Key, units: Units = Units.NoUnits): IntegerArrayKey = IntegerArrayKey(name, units)
+    }
+}
+
+
+@Serializable
+data class StoredArrays(override val name: Key, val data: List<ArrayStorage>) : HasKey {
+    /**
+     * Returns the number of coords in the Coordinates
+     */
+    val size: Int
+        get() = data.size
+}
+
+data class ArrayKey(override val name: Key): IsKey {
+
+    fun set(value: ArrayStorage, vararg values: ArrayStorage): StoredArrays =
+        StoredArrays(name, arrayOf(value, *values).toList())
+
+    fun isIn(target: HasParms): Boolean = target.exists(this)
+
+    fun get(target: HasParms): StoredArrays? = KeyHelpers.getStored<StoredArrays>(this, target)
+
+    operator fun invoke(target: HasParms): StoredArrays = get(target) ?: throw NoSuchElementException("Container doesn't have it")
+    fun value(s: HasParms): StoredArrays = invoke(s)
+    fun head(s: HasParms): ArrayStorage = invoke(s).data[0]
+
+    fun get(target: HasParms, i: Int): ArrayStorage = value(target).data[i]
+
+    // For compatibility
+    companion object {
+        fun make(name: Key, units: Units = Units.NoUnits): IntegerArrayKey = IntegerArrayKey(name, units)
     }
 }

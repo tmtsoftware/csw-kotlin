@@ -42,6 +42,44 @@ class ParmCodecsTest : FunSpec({
         objIn shouldBe st1
     }
 
+    test("NumberArrayKey CSW Serialization") {
+        // Double Test
+        val key1 = NumberArrayKey("key1name", Units.meter)
+        val st1 = key1.set(doubleArrayOf(11.23, 4.567, 7.89), doubleArrayOf(12.34, 7.89))
+
+        val jsonOut = parmFormat.encodeToString(ParamSerializer, st1)
+        val expected = """
+            {
+            "DoubleArrayKey" : {
+              "keyName" : "key1name",
+              "values" : [ [ 11.23, 4.567, 7.89 ], [ 12.34, 7.89 ] ],
+              "units" : "meter"
+            }
+          }
+        """.trimIndent()
+        jsonOut shouldEqualJson expected
+
+        val objIn = parmFormat.decodeFromString(ParamSerializer, jsonOut)
+        objIn shouldBe st1
+    }
+
+    test("NumberArrayKey CSW Serialization Float") {
+        // Double Test
+        val key1 = NumberArrayKey("key1name", Units.meter)
+        val st1 = key1.set(floatArrayOf(11.23f, 4.567f, 7.89f), floatArrayOf(12.34f, 7.89f))
+
+        val jsonOut = """{
+            "FloatArrayKey": {
+                 "keyName" : "key1name",
+                  "values" : [ [11.23, 4.567, 7.89], [12.34, 7.89] ],
+                  "units" : "meter"
+            }
+          }""".trimMargin()
+
+        val objIn = parmFormat.decodeFromString(ParamSerializer, jsonOut)
+        objIn shouldBe st1
+    }
+
     test("NumberKey Float CSW Serialization") {
 
         // Float Test
@@ -86,6 +124,28 @@ class ParmCodecsTest : FunSpec({
         objIn shouldBe st1
     }
 
+    test("IntegerArrayKey CSW Serialization") {
+
+        // Integer Array Test
+        val key1 = IntegerArrayKey("key1name", Units.volt)
+        val st1 = key1.set(longArrayOf(11, -4, 7890), longArrayOf(100, 200, -1000))
+
+        val jsonOut = parmFormat.encodeToString(ParamSerializer, st1)
+        val expected = """
+            {
+            "LongArrayKey" : {
+              "keyName" : "key1name",
+              "values" : [ [ 11, -4, 7890 ], [100, 200, -1000 ] ],
+              "units" : "volt"
+            }
+          }
+        """.trimIndent()
+        jsonOut shouldEqualJson expected
+
+        val objIn = parmFormat.decodeFromString(ParamSerializer, jsonOut)
+        objIn shouldBe st1
+    }
+
     test("StringKey CSW TopLevelSerializer") {
 
         // String Test
@@ -93,7 +153,6 @@ class ParmCodecsTest : FunSpec({
         val st1 = key1.set("ABC", "BCD", "CDE")
 
         val jout = parmFormat.encodeToString(ParamSerializer, st1)
-        println("jout: $jout")
         val expected = """
             {
             "StringKey" : {
@@ -214,7 +273,6 @@ class ParmCodecsTest : FunSpec({
 
         val st1 = key1.set(bytes1)
         val jout = parmFormat.encodeToString(ParamSerializer, st1)
-        println("jout: $jout")
         val expected = """
             {
             "ByteKey": {
@@ -274,7 +332,6 @@ class ParmCodecsTest : FunSpec({
         val k5 = MinorPlanetCoordKey(Tag.BASE)
         val st5 = c1.set(k5.set(epoch, inclination, longAscendingNode, argOfPerihelion, meanDistance, eccentricity, meanA))
         val jout5 = parmFormat.encodeToString(ParamSerializer, st5)
-        println("jout5: $jout5")
         val objin5 = parmFormat.decodeFromString(ParamSerializer, jout5)
         objin5 shouldBe st5
     }
@@ -569,21 +626,17 @@ class ParmCodecsTest : FunSpec({
             }
           }""".trimMargin()
         val in15 = parmFormat.decodeFromString(Param.Serializer, e15)
-        println("in15: $in15")
-        //in15 shouldBe Param("DoubleArrayKey", "DoubleArrayKey", listOf(doubleArrayOf(12.23, 13.34, 14.45)), Units.NoUnits)
+        in15 shouldBe Param("DoubleArrayKey", "DoubleArrayKey", listOf(doubleArrayOf(12.23, 13.34, 14.45)), Units.NoUnits)
 
         val e16 = """{
-            "IntArrayKey": {
-                 "keyName" : "IntArrayKey",
-                  "values" : [ [12, 23, 13] ],
+            "LongArrayKey": {
+                 "keyName" : "LongArrayKey",
+                  "values" : [ [12, 23, 14] ],
                   "units" : "NoUnits"
             }
           }""".trimMargin()
         val in16 = parmFormat.decodeFromString(Param.Serializer, e16)
-        println("in16: $in16")
-        in16.values.size shouldBe 1
-        in16.values[0] shouldBe longArrayOf(12, 23, 13)
-        //in16 shouldBe Param("IntArrayKey", "IntArrayKey", listOf(longArrayOf(12L, 13L, 14L)), Units.NoUnits)
+        in16 shouldBe Param("LongArrayKey", "LongArrayKey", listOf(longArrayOf(12, 23, 14)), Units.NoUnits)
 
         val e17 = """{
             "CoordKey": {
@@ -609,7 +662,11 @@ class ParmCodecsTest : FunSpec({
             }
           }""".trimMargin()
         val in17 = parmFormat.decodeFromString(Param.Serializer, e17)
-        println("in17: $in17")
+        in17 shouldBe Param("CoordKey", "CoordKey",
+            listOf(EqSurrogate(tag= Tag.BASE.value,
+                ra=659912250000, dec=-109892300000, frame= EqFrame.FK5.name, catalogName="BrightStar",
+                pm=PMSurrogate(0.5, -2.33)),
+                SolarSystemSurrogate(tag=Tag.BASE.value, body=SolarSystemObject.Venus.name)), units=Units.NoUnits)
 
         val e18 = """{
             "StringKey": {
@@ -640,5 +697,15 @@ class ParmCodecsTest : FunSpec({
         }""".trimMargin()
         val in20 = parmFormat.decodeFromString(Param.Serializer, e20)
         in20 shouldBe Param("UTCTimeKey", "UTCTimeKey", arrayOf("2024-10-11T17:55:40.932526Z").toList(), Units.utc)
+
+        val e21 = """{
+            "FloatArrayKey": {
+                 "keyName" : "key1name",
+                  "values" : [ [12.23, 13.34, 14.45] ],
+                  "units" : "NoUnits"
+            }
+          }""".trimMargin()
+        val in21 = parmFormat.decodeFromString(Param.Serializer, e21)
+        in21 shouldBe Param("FloatArrayKey", "key1name", listOf(doubleArrayOf(12.23, 13.34, 14.45)), Units.NoUnits)
     }
 })

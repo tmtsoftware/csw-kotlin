@@ -19,7 +19,7 @@ class SimpleKeysTest: FunSpec ( {
         val t1 = NumberKey("key1", Units.kilogram)
         val v1 = 22.0
         val st1 = t1.set(v1)
-        println(st1)
+
     }
 
     //fun testBoolean(s: String): Boolean = s == "t"

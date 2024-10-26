@@ -377,7 +377,7 @@ data class CoordKey(override val name: Key): IsKey {
     private val notFound = "Parameter set does not contain key: $name"
 
     fun set(value: CoordStore, vararg values: CoordStore): Coordinates =
-        Coordinates(name, arrayOf(value, *values).toList())
+        Coordinates(name, listOf(value, *values))
 
     fun contains(target: HasParms): Boolean = target.exists(this)
     fun isIn(target: HasParms): Boolean = contains(target)

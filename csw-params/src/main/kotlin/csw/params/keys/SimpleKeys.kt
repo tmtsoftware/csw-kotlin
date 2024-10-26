@@ -51,10 +51,9 @@ data class NumberKey(override val name: Key, val units: Units = Units.NoUnits): 
     fun contains(target: HasParms): Boolean = target.exists(this)
     fun isIn(target: HasParms): Boolean = contains(target)
 
-    fun get(target: HasParms): Quantity? {
-        val qs = KeyHelpers.getStored<Qstore>(this, target)
-        return qs?.let { Quantity(qs.data, qs.units) }
-    }
+    fun get(target: HasParms): Quantity? =
+        KeyHelpers.getStored<Qstore>(this, target)?.let { Quantity(it.data, it.units) }
+
     /*
         fun scalar(target: HasParms): Scalar {
             val q = get(target).getOrElse { throw NoSuchElementException(notFound) }
@@ -105,10 +104,9 @@ data class IntegerKey(override val name: Key, val units: Units = Units.NoUnits):
     fun contains(target: HasParms): Boolean = target.exists(this)
     fun isIn(target: HasParms): Boolean = contains(target)
 
-    fun get(target: HasParms): Quantity? {
-        val qs = KeyHelpers.getStored<Qstore>(this, target)
-        return qs?.let { Quantity(qs.data, qs.units) }
-    }
+    fun get(target: HasParms): Quantity? =
+        KeyHelpers.getStored<Qstore>(this, target)?.let { Quantity(it.data, it.units) }
+
 /*
     fun get2(target: HasParms, sname: StructKey): Quantity? {
         val x = Struct.getStored(sname.name, target)

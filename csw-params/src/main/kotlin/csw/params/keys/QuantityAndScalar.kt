@@ -43,28 +43,6 @@ data class Scalar(val value: Array<String>) {
     }
 }
 
-data class QuantityX<T>(val value: T, val units: Units = Units.NoUnits) {
-    override fun toString(): String = "<Quantity ${KeyHelpers.aashow(value)} ${units.name}>"
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as QuantityX<*>
-        if (other.value is Array<*>) {
-            return this.units == other.units && other.value.contentDeepEquals(this.value as Array<*>)
-        } else {
-            // Simple, non-array value
-            return this.value == other.value && this.units == other.units
-        }
-    }
-
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
-}
-
-
 data class Quantity(val svalue: Array<String>, val units: Units = Units.NoUnits) {
     override fun toString(): String = "<Quantity ${svalue.joinToString(separator = ",", "[", "]")} ${units.name}>"
 

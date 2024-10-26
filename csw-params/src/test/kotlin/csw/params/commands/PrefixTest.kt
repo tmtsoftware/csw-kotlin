@@ -12,6 +12,7 @@ import kotlinx.serialization.encodeToByteArray
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+@kotlinx.serialization.ExperimentalSerializationApi
 class PrefixTest : FunSpec({
 
     test("should able to create Prefix and access subsystem from valid prefix string") {
